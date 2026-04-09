@@ -24,7 +24,14 @@ interface PackageProps {
 }
 
 const Packages: React.FC<PackageProps> = ({ t }) => {
-  const tp = t.tourPackages;
+  const tp = t?.tourPackages || {
+    title: 'Tour Packages',
+    subtitle: 'Discover our curated spiritual journeys.',
+    basic: { title: 'Basic', duration: '3 Days', services: [] },
+    premium: { title: 'Premium', duration: '5 Days', services: [] },
+    luxury: { title: 'Luxury', duration: '7 Days', services: [] },
+    safetySection: { title: 'Safety', description: 'Your safety is our priority.', features: { gps: {}, sos: {}, support: {}, partners: {} } }
+  };
   const [specialPackages, setSpecialPackages] = useState<any[]>([]);
 
   useEffect(() => {
@@ -32,7 +39,7 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
     const fetchPackages = async () => {
       try {
         const loaded = await adminStorage.getPackages();
-        setSpecialPackages(loaded);
+        setSpecialPackages(Array.isArray(loaded) ? loaded : []);
       } catch (error) {
          console.error('Failed to load packages:', error);
       }
@@ -48,56 +55,56 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
 
   const packages = [
     {
-      title: tp.basic.title,
+      title: tp.basic?.title,
       price: '₹5,999',
-      duration: tp.basic.duration,
+      duration: tp.basic?.duration,
       popular: false,
       services: [
-        { icon: <Hotel className="h-4 w-4" />, text: tp.basic.services[0] },
-        { icon: <Map className="h-4 w-4" />, text: tp.basic.services[1] },
-        { icon: <Car className="h-4 w-4" />, text: tp.basic.services[2] },
-        { icon: <Utensils className="h-4 w-4" />, text: tp.basic.services[3] }
+        { icon: <Hotel className="h-4 w-4" />, text: tp.basic?.services?.[0] },
+        { icon: <Map className="h-4 w-4" />, text: tp.basic?.services?.[1] },
+        { icon: <Car className="h-4 w-4" />, text: tp.basic?.services?.[2] },
+        { icon: <Utensils className="h-4 w-4" />, text: tp.basic?.services?.[3] }
       ],
       safety: [
-        tp.safetySection.features.gps.title,
-        tp.safetySection.features.support.title
+        tp.safetySection?.features?.gps?.title,
+        tp.safetySection?.features?.support?.title
       ]
     },
     {
-      title: tp.premium.title,
+      title: tp.premium?.title,
       price: '₹12,499',
-      duration: tp.premium.duration,
+      duration: tp.premium?.duration,
       popular: true,
       services: [
-        { icon: <Hotel className="h-4 w-4" />, text: tp.premium.services[0] },
-        { icon: <Map className="h-4 w-4" />, text: tp.premium.services[1] },
-        { icon: <Utensils className="h-4 w-4" />, text: tp.premium.services[2] },
-        { icon: <Car className="h-4 w-4" />, text: tp.premium.services[3] },
-        { icon: <Navigation className="h-4 w-4" />, text: tp.premium.services[4] }
+        { icon: <Hotel className="h-4 w-4" />, text: tp.premium?.services?.[0] },
+        { icon: <Map className="h-4 w-4" />, text: tp.premium?.services?.[1] },
+        { icon: <Utensils className="h-4 w-4" />, text: tp.premium?.services?.[2] },
+        { icon: <Car className="h-4 w-4" />, text: tp.premium?.services?.[3] },
+        { icon: <Navigation className="h-4 w-4" />, text: tp.premium?.services?.[4] }
       ],
       safety: [
-        tp.safetySection.features.gps.title,
-        tp.safetySection.features.sos.title,
-        tp.safetySection.features.support.title
+        tp.safetySection?.features?.gps?.title,
+        tp.safetySection?.features?.sos?.title,
+        tp.safetySection?.features?.support?.title
       ]
     },
     {
-      title: tp.luxury.title,
+      title: tp.luxury?.title,
       price: '₹24,999',
-      duration: tp.luxury.duration,
+      duration: tp.luxury?.duration,
       popular: false,
       services: [
-        { icon: <Hotel className="h-4 w-4" />, text: tp.luxury.services[0] },
-        { icon: <Map className="h-4 w-4" />, text: tp.luxury.services[1] },
-        { icon: <Utensils className="h-4 w-4" />, text: tp.luxury.services[2] },
-        { icon: <Car className="h-4 w-4" />, text: tp.luxury.services[3] },
-        { icon: <Navigation className="h-4 w-4" />, text: tp.luxury.services[4] }
+        { icon: <Hotel className="h-4 w-4" />, text: tp.luxury?.services?.[0] },
+        { icon: <Map className="h-4 w-4" />, text: tp.luxury?.services?.[1] },
+        { icon: <Utensils className="h-4 w-4" />, text: tp.luxury?.services?.[2] },
+        { icon: <Car className="h-4 w-4" />, text: tp.luxury?.services?.[3] },
+        { icon: <Navigation className="h-4 w-4" />, text: tp.luxury?.services?.[4] }
       ],
       safety: [
-        tp.safetySection.features.gps.title,
-        tp.safetySection.features.sos.title,
-        tp.safetySection.features.support.title,
-        tp.safetySection.features.partners.title
+        tp.safetySection?.features?.gps?.title,
+        tp.safetySection?.features?.sos?.title,
+        tp.safetySection?.features?.support?.title,
+        tp.safetySection?.features?.partners?.title
       ]
     }
   ];
@@ -105,23 +112,23 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
   const safetyFeatures = [
     { 
       icon: <Navigation className="h-6 w-6" />, 
-      title: tp.safetySection.features.gps.title, 
-      desc: tp.safetySection.features.gps.desc 
+      title: tp.safetySection?.features?.gps?.title, 
+      desc: tp.safetySection?.features?.gps?.desc 
     },
     { 
       icon: <AlertCircle className="h-6 w-6" />, 
-      title: tp.safetySection.features.sos.title, 
-      desc: tp.safetySection.features.sos.desc 
+      title: tp.safetySection?.features?.sos?.title, 
+      desc: tp.safetySection?.features?.sos?.desc 
     },
     { 
       icon: <Headphones className="h-6 w-6" />, 
-      title: tp.safetySection.features.support.title, 
-      desc: tp.safetySection.features.support.desc 
+      title: tp.safetySection?.features?.support?.title, 
+      desc: tp.safetySection?.features?.support?.desc 
     },
     { 
       icon: <Smartphone className="h-6 w-6" />, 
-      title: tp.safetySection.features.partners.title, 
-      desc: tp.safetySection.features.partners.desc 
+      title: tp.safetySection?.features?.partners?.title, 
+      desc: tp.safetySection?.features?.partners?.desc 
     }
   ];
 
@@ -164,28 +171,32 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
 
                 <div className="space-y-4 mb-8">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Services Included</p>
-                  {pkg.services.map((svc, idx) => (
-                    <div key={idx} className="flex items-center text-sm text-gray-700">
-                      <div className="bg-red-50 p-1.5 rounded-lg mr-3 text-red-600">
-                        {svc.icon}
+                  {pkg.services?.map((svc, idx) => (
+                    svc.text && (
+                      <div key={idx} className="flex items-center text-sm text-gray-700">
+                        <div className="bg-red-50 p-1.5 rounded-lg mr-3 text-red-600">
+                          {svc.icon}
+                        </div>
+                        <span className="line-clamp-1">{svc.text}</span>
                       </div>
-                      <span className="line-clamp-1">{svc.text}</span>
-                    </div>
+                    )
                   ))}
                 </div>
 
                 <div className="space-y-4 mb-8">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Safety Features</p>
-                  {pkg.safety.map((safe, idx) => (
-                    <div key={idx} className="flex items-center text-sm text-gray-600">
-                      <ShieldCheck className="h-4 w-4 mr-3 text-green-500 shrink-0" />
-                      <span className="line-clamp-1">{safe}</span>
-                    </div>
+                  {pkg.safety?.map((safe, idx) => (
+                    safe && (
+                      <div key={idx} className="flex items-center text-sm text-gray-600">
+                        <ShieldCheck className="h-4 w-4 mr-3 text-green-500 shrink-0" />
+                        <span className="line-clamp-1">{safe}</span>
+                      </div>
+                    )
                   ))}
                 </div>
 
                 <button 
-                  onClick={() => handlePackageBooking(pkg.title)}
+                  onClick={() => handlePackageBooking(pkg.title || '')}
                   className={`w-full py-4 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
                     pkg.popular 
                       ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-200' 
@@ -224,7 +235,7 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
 
                 <div className="space-y-4 mb-8">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Services Included</p>
-                  {pkg.services.map((svc: string, idx: number) => (
+                  {pkg.services?.map((svc: string, idx: number) => (
                     <div key={idx} className="flex items-center text-sm text-gray-700">
                       <div className="bg-red-50 p-1.5 rounded-lg mr-3 text-red-600">
                         <Check className="h-4 w-4" />
