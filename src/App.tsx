@@ -1178,19 +1178,25 @@ const App: React.FC = () => {
     setSelectedExperience(experienceId);
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Save to admin storage
     const experience = experiences.find(e => e.id === selectedExperience);
-    adminStorage.saveBooking({
-      experienceName: experience?.name || 'Experience',
-      date: bookingData.date,
-      time: bookingData.time,
-      participants: bookingData.participants,
-      specialRequests: bookingData.specialRequests,
-      totalCost: `${experience?.price.replace('₹', '')} × ${bookingData.participants}`
-    });
+    try {
+      await adminStorage.saveBooking({
+        experienceName: experience?.name || 'Experience',
+        date: bookingData.date,
+        time: bookingData.time,
+        participants: bookingData.participants,
+        specialRequests: bookingData.specialRequests,
+        totalCost: `${experience?.price.replace('₹', '')} × ${bookingData.participants}`
+      });
+    } catch (error) {
+      console.error('Booking failed', error);
+      showNotification('Booking failed. Please try again.', 'info');
+      return;
+    }
 
     showNotification(currentLanguage === 'English' ? 'Booking confirmed! We will contact you soon.' : 
           currentLanguage === 'हिंदी' ? 'बुकिंग पुष्ट! हम जल्द ही आपसे संपर्क करेंगे।' :
@@ -1200,7 +1206,7 @@ const App: React.FC = () => {
     setBookingData({ date: '', time: '', participants: 1, specialRequests: '' });
   };
 
-  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     // Let Netlify handle the underlying form, but we capture data locally too
     const formData = new FormData(e.currentTarget);
     const name = formData.get('name') as string;
@@ -1208,7 +1214,11 @@ const App: React.FC = () => {
     const message = formData.get('message') as string;
 
     if (name && subject && message) {
-      adminStorage.saveHelpRequest({ name, subject, message });
+      try {
+        await adminStorage.saveHelpRequest({ name, subject, message });
+      } catch (error) {
+        console.error('Failed to submit request', error);
+      }
     }
   };
 

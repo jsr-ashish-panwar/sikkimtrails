@@ -1,13 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, MapPin, ShieldAlert, Thermometer, Briefcase, Info, PhoneCall, Sparkles } from 'lucide-react';
-
-type LangKey = 'English' | 'हिंदी' | 'नेपाली' | 'འབྲུག་ཁ';
+import { Bot, X, Send, Navigation, Wallet, ExternalLink, ShieldAlert, PhoneCall } from 'lucide-react';
+import { adminStorage } from '../utils/adminStorage';
 
 interface Message {
   type: 'user' | 'bot';
   content: string | React.ReactNode;
   timestamp: Date;
-  intent?: string;
 }
 
 interface ChatbotProps {
@@ -17,186 +15,117 @@ interface ChatbotProps {
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      type: 'bot',
+      content: 'Hello! I am Saarthi. How can I assist you with your Sikkim trip today?',
+      timestamp: new Date()
+    }
+  ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      const welcomeMessage = getWelcomeMessage();
-      setMessages([{ type: 'bot', content: welcomeMessage, timestamp: new Date() }]);
+    if (currentLanguage !== 'English' && messages.length === 1) {
+       // Optional: Could trigger translating the greeting on language change,
+       // but for simplicity, we let the user start typing.
     }
-  }, [isOpen]);
+  }, [currentLanguage]);
 
-  const getWelcomeMessage = () => {
-    const greetings: Record<LangKey, string> = {
-      English: "Namaste! I'm Saarthi, your spiritual and logistical guide. I can help with monastery history, travel routes, packing lists, and safety. What's on your mind today?",
-      हिंदी: "नमस्ते! मैं सारथी हूं। मैं मठ के इतिहास, यात्रा मार्गों और सुरक्षा में मदद कर सकता हूं। आज आप क्या जानना चाहते हैं?",
-      नेपाली: "नमस्ते! म सारथी हुँ। तपाईंको यात्राको लागि म कसरी मद्दत गर्न सक्छु?",
-      "འབྲུག་ཁ": "བཀྲ་ཤིས་བདེ་ལེགས! ང་སཱར་ཐི་ཨིན་ ཁྱོད་ཀྱི་སི་ཀིམ་འགྲུལ་བསྐྱོད་ཀྱི་ལམ་སྟོན་པ་ཨིན།"
-    };
-    return greetings[currentLanguage as LangKey] || greetings.English;
-  };
+  const getBotResponse = async (userMessage: string): Promise<Message> => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage, language: currentLanguage })
+      });
+      const data = await response.json();
+      
+      let reply: string = data.reply || "I couldn't process that request.";
+      let showPackages = false;
+      let showEmergency = false;
 
-  const getBotResponse = (userMessage: string): Message => {
-    const lowerMessage = userMessage.toLowerCase();
-    const l = currentLanguage as LangKey;
-    const timestamp = new Date();
+      // Extract special tokens injected by our strong Gemini system prompt
+      if (reply.includes('[SHOW_PACKAGES]')) {
+         showPackages = true;
+         reply = reply.replace('[SHOW_PACKAGES]', '').trim();
+      }
+      if (reply.includes('[SHOW_EMERGENCY]')) {
+         showEmergency = true;
+         reply = reply.replace('[SHOW_EMERGENCY]', '').trim();
+      }
 
-    // Emergency Intent
-    if (lowerMessage.includes('emergency') || lowerMessage.includes('help') || lowerMessage.includes('police') || lowerMessage.includes('hospital')) {
       return {
         type: 'bot',
-        timestamp,
+        timestamp: new Date(),
         content: (
           <div className="space-y-3">
-            <div className="flex items-center text-red-600 font-bold mb-2">
-              <ShieldAlert className="h-5 w-5 mr-2" />
-              <span>EMERGENCY CONTACTS</span>
-            </div>
-            <div className="grid grid-cols-1 gap-2">
-              <a href="tel:112" className="flex items-center justify-between bg-red-50 p-2 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
-                <span className="text-sm font-medium">General Emergency</span>
-                <PhoneCall className="h-4 w-4 text-red-600" />
-              </a>
-              <a href="tel:1097" className="flex items-center justify-between bg-red-50 p-2 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
-                <span className="text-sm font-medium">Tourist Police</span>
-                <PhoneCall className="h-4 w-4 text-red-600" />
-              </a>
-              <a href="tel:102" className="flex items-center justify-between bg-red-50 p-2 rounded-lg border border-red-100 hover:bg-red-100 transition-colors">
-                <span className="text-sm font-medium">Ambulance</span>
-                <PhoneCall className="h-4 w-4 text-red-600" />
-              </a>
-            </div>
+             <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">{reply}</div>
+             
+             {showPackages && (
+                <div className="mt-4 p-3 bg-green-50/50 rounded-xl border border-green-100">
+                  <div className="flex items-center text-green-700 font-bold mb-2">
+                    <Wallet className="h-4 w-4 mr-2" />
+                    <span className="text-xs uppercase">Available Tour Packages</span>
+                  </div>
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+                    {adminStorage.getPackages().length > 0 ? (
+                      adminStorage.getPackages().map((p, i) => (
+                        <div key={i} className="bg-white p-2.5 rounded-lg border border-green-100 flex justify-between items-center shadow-sm">
+                          <div>
+                            <span className="block text-xs font-bold text-gray-800">{p.title}</span>
+                            <span className="text-[10px] text-gray-500">{p.duration}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="block text-xs font-bold text-green-700">{p.price}</span>
+                            <button className="text-[10px] bg-green-600 text-white px-2 py-1 rounded-md mt-1 hover:bg-green-700 transition-colors">Book Now</button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-xs text-gray-500 italic">No special packages found at the moment. Try our standard tours!</div>
+                    )}
+                  </div>
+                </div>
+             )}
+
+             {showEmergency && (
+                <div className="mt-4 p-4 bg-red-50 rounded-xl border border-red-100">
+                  <div className="flex items-center text-red-700 font-bold mb-3">
+                    <ShieldAlert className="h-5 w-5 mr-2" />
+                    <span>EMERGENCY HELPLINE</span>
+                  </div>
+                  <div className="flex align-center justify-between bg-white px-4 py-3 border border-red-200 rounded-lg shadow-sm">
+                    <div className="flex items-center">
+                       <Navigation className="h-5 w-5 text-red-600 mr-3" />
+                       <span className="text-sm font-bold text-gray-800">Tourist Police</span>
+                    </div>
+                    <a href="tel:1097" className="flex items-center bg-red-100 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-200 transition-colors">
+                      <PhoneCall className="h-4 w-4 mr-1 text-red-700" />
+                      <span className="text-sm font-black tracking-widest">1097</span>
+                    </a>
+                  </div>
+                </div>
+             )}
           </div>
         )
       };
-    }
-
-    // Distance/Time Intent
-    if (lowerMessage.includes('distance') || lowerMessage.includes('far') || lowerMessage.includes('how long') || lowerMessage.includes('route')) {
-      const distances = [
-        { route: 'Gangtok to Rumtek', d: '24km', t: '1h' },
-        { route: 'Gangtok to Pelling', d: '115km', t: '4.5h' },
-        { route: 'Gangtok to Lachung', d: '110km', t: '6h' },
-        { route: 'Gangtok to Ravangla', d: '65km', t: '2.5h' }
-      ];
-      
+    } catch (error) {
+      console.error("Chat API Error:", error);
       return {
         type: 'bot',
-        timestamp,
-        content: (
-          <div className="space-y-2">
-            <div className="flex items-center text-blue-600 font-bold mb-1">
-              <MapPin className="h-4 w-4 mr-2" />
-              <span>TRAVEL ROUTES</span>
-            </div>
-            {distances.map((dist, i) => (
-              <div key={i} className="flex justify-between text-xs border-b border-gray-100 py-1">
-                <span className="text-gray-600 font-medium">{dist.route}</span>
-                <span className="font-bold">{dist.d} ({dist.t})</span>
-              </div>
-            ))}
-            <p className="text-[10px] text-gray-400 mt-2 italic">*Times are estimates based on hill road conditions.</p>
-          </div>
-        )
+        timestamp: new Date(),
+        content: "Sorry, I am having trouble connecting to the network right now."
       };
     }
-
-    // Packing Intent
-    if (lowerMessage.includes('pack') || lowerMessage.includes('clothes') || lowerMessage.includes('checklist')) {
-      return {
-        type: 'bot',
-        timestamp,
-        content: (
-          <div className="space-y-2">
-            <div className="flex items-center text-orange-600 font-bold mb-1">
-              <Briefcase className="h-4 w-4 mr-2" />
-              <span>PACKING ESSENTIALS</span>
-            </div>
-            <ul className="text-xs space-y-1 text-gray-700">
-              <li className="flex items-center"><Sparkles className="h-3 w-3 text-orange-400 mr-2" /> Layered clothing (Thermal/Fleece)</li>
-              <li className="flex items-center"><Sparkles className="h-3 w-3 text-orange-400 mr-2" /> Sturdy walking/hiking shoes</li>
-              <li className="flex items-center"><Sparkles className="h-3 w-3 text-orange-400 mr-2" /> Sunscreen & Lip balm (High UV)</li>
-              <li className="flex items-center"><Sparkles className="h-3 w-3 text-orange-400 mr-2" /> Raincoat or umbrella (Sudden rain)</li>
-              <li className="flex items-center"><Sparkles className="h-3 w-3 text-orange-400 mr-2" /> Personal medicine for altitude</li>
-            </ul>
-          </div>
-        )
-      };
-    }
-
-    // Weather Intent
-    if (lowerMessage.includes('weather') || lowerMessage.includes('cold') || lowerMessage.includes('season')) {
-      return {
-        type: 'bot',
-        timestamp,
-        content: (
-          <div className="space-y-2">
-            <div className="flex items-center text-cyan-600 font-bold mb-1">
-              <Thermometer className="h-4 w-4 mr-2" />
-              <span>WEATHER ADVISORY</span>
-            </div>
-            <p className="text-xs text-gray-700">Current season in Sikkim is ideal. Expect 10°C to 20°C in Gangtok, but sub-zero temperatures in North Sikkim.</p>
-            <div className="bg-cyan-50 p-2 rounded-lg text-[10px] text-cyan-800 border border-cyan-100">
-              <strong>Tip:</strong> Always carry a heavy jacket even in summer if you're visiting high-altitude lake areas!
-            </div>
-          </div>
-        )
-      };
-    }
-
-    // Etiquette Intent
-    if (lowerMessage.includes('etiquette') || lowerMessage.includes('respect') || lowerMessage.includes('rules') || lowerMessage.includes('how to behave')) {
-      return {
-        type: 'bot',
-        timestamp,
-        content: (
-          <div className="space-y-2">
-            <div className="flex items-center text-purple-600 font-bold mb-1">
-              <Info className="h-4 w-4 mr-2" />
-              <span>MONASTERY RULES</span>
-            </div>
-            <ul className="text-xs space-y-1 text-gray-700">
-              <li className="flex items-start">✅ Remove shoes before entering shrines.</li>
-              <li className="flex items-start">✅ Walk clockwise around sacred sites.</li>
-              <li className="flex items-start">✅ Photography often allowed outside, not inside.</li>
-              <li className="flex items-start">✅ Keep silence and dress modestly.</li>
-            </ul>
-          </div>
-        )
-      };
-    }
-
-    // Permit Intent
-    if (lowerMessage.includes('permit') || lowerMessage.includes('rap')) {
-      return {
-        type: 'bot',
-        timestamp,
-        content: l === 'हिंदी' ? 'सिक्किम के लिए RAP/PAP परमिट आवश्यक हैं। आप उन्हें ऑनलाइन या रंगपो चेकपोस्ट पर प्राप्त कर सकते हैं।' : 
-               'RAP/PAP permits are required for Sikkim. You can get them online or at Rangpo checkpost. Foreign nationals need an Inner Line Permit (ILP).'
-      };
-    }
-    
-    // Default fallback
-    return {
-      type: 'bot',
-      timestamp,
-      content: l === 'हिंदी' ? 'मैं इसके बारे में और जान रहा हूँ। आप दूरी, मौसम या इमरजेंसी के बारे में पूछ सकते हैं।' : 
-             "I'm Saarthi, your digital travel companion. Ask me about distances, weather, what to pack, or monastery etiquette!"
-    };
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
 
     const userMsg: Message = {
@@ -209,11 +138,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
     setInputMessage('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = getBotResponse(inputMessage);
-      setMessages(prev => [...prev, response]);
-      setIsTyping(false);
-    }, 1000);
+    const response = await getBotResponse(userMsg.content as string);
+    setMessages(prev => [...prev, response]);
+    setIsTyping(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -226,65 +153,68 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 w-full h-full sm:w-[400px] sm:h-[600px] bg-white sm:rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-gray-100 flex flex-col z-50 overflow-hidden text-gray-900 transition-all duration-300">
+    <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 w-full h-full sm:w-[420px] sm:h-[650px] bg-white sm:rounded-[2.5rem] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.35)] border border-gray-100 flex flex-col z-50 overflow-hidden text-gray-900 transition-all duration-300">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-600 via-orange-600 to-red-600 text-white p-5 flex justify-between items-center shrink-0 shadow-lg">
-        <div className="flex items-center space-x-3">
-          <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
-            <Bot className="h-6 w-6" />
+      <div className="bg-gradient-to-r from-red-600 via-orange-600 to-red-600 text-white p-6 pb-8 flex justify-between items-center shrink-0 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+        <div className="flex items-center space-x-4 relative z-10">
+          <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-xl border border-white/20 shadow-inner">
+            <Bot className="h-7 w-7 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-sm tracking-tight text-white mb-0">Saarthi Digital Guide</h3>
+            <h3 className="font-black text-lg tracking-tight text-white mb-0 leading-tight">Saarthi</h3>
             <div className="flex items-center">
-              <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
-              <p className="text-[10px] opacity-90 uppercase tracking-widest font-bold">Online & Ready</p>
+              <span className="w-2.5 h-2.5 bg-green-400 rounded-full mr-2 shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse"></span>
+              <p className="text-[10px] text-white/80 uppercase tracking-widest font-black">AI Gemini Guide</p>
             </div>
           </div>
         </div>
-        <button onClick={onClose} className="text-white hover:bg-white/20 p-2 rounded-full transition-colors"><X className="h-6 w-6" /></button>
+        <button onClick={onClose} className="text-white hover:bg-white/20 p-2.5 rounded-full transition-all hover:rotate-90 relative z-10"><X className="h-6 w-6" /></button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-gray-50/80 scrollbar-thin rounded-t-[2.5rem] -mt-6 relative z-20">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+          <div key={i} className={`flex ${m.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
             {m.type === 'bot' && (
-               <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-2 shrink-0">
-                  <Bot className="h-4 w-4 text-red-600" />
+               <div className="w-9 h-9 bg-gradient-to-tr from-red-600 to-orange-500 rounded-2xl flex items-center justify-center mr-3 shrink-0 shadow-md">
+                  <Bot className="h-5 w-5 text-white" />
                </div>
             )}
-            <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm shadow-sm ${
+            <div className={`max-w-[85%] px-5 py-3.5 rounded-3xl text-sm shadow-sm transition-all ${
               m.type === 'user' 
-                ? 'bg-red-600 text-white rounded-br-none' 
-                : 'bg-white border border-gray-100 rounded-bl-none text-gray-800'
+                ? 'bg-red-600 text-white rounded-br-none font-medium' 
+                : 'bg-white border border-gray-200 rounded-bl-none text-gray-800 ring-4 ring-black/0 shadow-md'
             }`}>
               {m.content}
             </div>
           </div>
         ))}
         {isTyping && (
-          <div className="flex justify-start items-center space-x-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
-            <div className="bg-white border border-gray-100 rounded-full px-4 py-2 animate-pulse text-xs text-gray-400">Saarthi is thinking...</div>
+          <div className="flex justify-start items-center space-x-3">
+            <div className="w-9 h-9 bg-gray-200 rounded-2xl animate-pulse"></div>
+            <div className="bg-white border border-gray-100 rounded-3xl px-6 py-3 shadow-sm animate-pulse flex items-center space-x-2">
+              <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-bounce"></div>
+              <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-1.5 h-1.5 bg-red-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Suggestion Chips */}
-      <div className="px-4 py-2 bg-white/50 flex flex-wrap gap-2 border-t border-gray-100 overflow-x-auto no-scrollbar max-h-24">
+      <div className="px-5 py-3 bg-white/80 backdrop-blur-md flex flex-wrap gap-2 border-t border-gray-100 overflow-x-auto scrollbar-hide max-h-32">
         {[
-          { l: '🚨 EMERGENCY', q: 'I need emergency help' },
-          { l: '📍 Distances', q: 'Tell me travel distances' },
-          { l: '🎒 Packing List', q: 'What to pack?' },
-          { l: '📜 Rules', q: 'Monastery etiquette' },
-          { l: '☁️ Weather', q: 'Sikkim weather' },
-          { l: '🍛 Local Food', q: 'Food recommendations' }
+          { l: '🗺️ Local Food', q: 'What are the famous local dishes in Sikkim?' },
+          { l: '🚠 Tour Packages', q: 'What are the available tour packages right now?' },
+          { l: '🚑 Emergency', q: 'I need emergency police help!' },
+          { l: '🌄 Best Monasteries', q: 'Tell me about the best monasteries to visit.' }
         ].map((btn, i) => (
           <button 
             key={i} 
             onClick={() => { setInputMessage(btn.q); setTimeout(handleSendMessage, 50); }} 
-            className="text-[10px] whitespace-nowrap bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-xl hover:border-red-600 hover:text-red-600 transition-all active:scale-95 shadow-sm font-semibold"
+            className="text-[10px] whitespace-nowrap bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-2xl hover:border-red-600 hover:text-red-600 hover:bg-red-50 transition-all active:scale-95 shadow-sm font-bold tracking-tight"
           >
             {btn.l}
           </button>
@@ -292,22 +222,22 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white border-t border-gray-100">
-        <div className="flex space-x-2">
+      <div className="p-5 bg-white border-t border-gray-100 relative">
+        <div className="flex items-center bg-gray-50 rounded-[2rem] p-1.5 focus-within:ring-2 focus-within:ring-red-500/20 transition-all border border-gray-200">
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask your Saarthi..."
-            className="flex-1 bg-gray-50 border-none rounded-2xl px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 transition-all font-medium"
+            placeholder="Ask your Gemini Saarthi..."
+            className="flex-1 bg-transparent border-none px-5 py-2.5 text-sm focus:outline-none font-medium text-gray-800 placeholder:text-gray-400"
           />
           <button 
             onClick={handleSendMessage} 
             disabled={!inputMessage.trim()}
-            className="bg-red-600 text-white rounded-xl px-4 py-3 hover:bg-red-700 disabled:bg-gray-200 shadow-lg transition-all active:scale-95"
+            className="bg-red-600 text-white rounded-full p-3 hover:bg-red-700 disabled:bg-gray-300 shadow-md transition-all active:scale-95 disabled:shadow-none"
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-5 w-5 ml-0.5" />
           </button>
         </div>
       </div>

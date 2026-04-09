@@ -1,25 +1,26 @@
+import axios from 'axios';
 
 export interface Booking {
-  id: string;
+  id?: string;
   experienceName: string;
   date: string;
   time: string;
   participants: number;
   specialRequests: string;
   totalCost: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface HelpRequest {
-  id: string;
+  id?: string;
   name: string;
   subject: string;
   message: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface SpecialPackage {
-  id: string;
+  id?: string;
   title: string;
   price: string;
   duration: string;
@@ -28,78 +29,49 @@ export interface SpecialPackage {
   popular: boolean;
 }
 
-const STORAGE_KEYS = {
-  BOOKINGS: 'ghoomo_bookings',
-  HELP_REQUESTS: 'ghoomo_help_requests',
-  PACKAGES: 'ghoomo_special_packages'
-};
+const API_BASE = '/api';
 
 export const adminStorage = {
   // Bookings
-  getBookings: (): Booking[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.BOOKINGS);
-    return data ? JSON.parse(data) : [];
+  getBookings: async (): Promise<Booking[]> => {
+    const res = await axios.get(`${API_BASE}/bookings`);
+    return res.data;
   },
-  saveBooking: (booking: Omit<Booking, 'id' | 'createdAt'>) => {
-    const bookings = adminStorage.getBookings();
-    const newBooking: Booking = {
-      ...booking,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString()
-    };
-    bookings.push(newBooking);
-    localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(bookings));
-    return newBooking;
+  saveBooking: async (booking: Omit<Booking, 'id' | 'createdAt'>): Promise<Booking> => {
+    const res = await axios.post(`${API_BASE}/bookings`, booking);
+    return res.data;
   },
-  deleteBooking: (id: string) => {
-    const bookings = adminStorage.getBookings().filter(b => b.id !== id);
-    localStorage.setItem(STORAGE_KEYS.BOOKINGS, JSON.stringify(bookings));
+  deleteBooking: async (id: string): Promise<void> => {
+    await axios.delete(`${API_BASE}/bookings/${id}`);
   },
 
   // Help Requests
-  getHelpRequests: (): HelpRequest[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.HELP_REQUESTS);
-    return data ? JSON.parse(data) : [];
+  getHelpRequests: async (): Promise<HelpRequest[]> => {
+    const res = await axios.get(`${API_BASE}/help-requests`);
+    return res.data;
   },
-  saveHelpRequest: (request: Omit<HelpRequest, 'id' | 'createdAt'>) => {
-    const requests = adminStorage.getHelpRequests();
-    const newRequest: HelpRequest = {
-      ...request,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString()
-    };
-    requests.push(newRequest);
-    localStorage.setItem(STORAGE_KEYS.HELP_REQUESTS, JSON.stringify(requests));
-    return newRequest;
+  saveHelpRequest: async (request: Omit<HelpRequest, 'id' | 'createdAt'>): Promise<HelpRequest> => {
+    const res = await axios.post(`${API_BASE}/help-requests`, request);
+    return res.data;
   },
-  deleteHelpRequest: (id: string) => {
-    const requests = adminStorage.getHelpRequests().filter(r => r.id !== id);
-    localStorage.setItem(STORAGE_KEYS.HELP_REQUESTS, JSON.stringify(requests));
+  deleteHelpRequest: async (id: string): Promise<void> => {
+    await axios.delete(`${API_BASE}/help-requests/${id}`);
   },
 
   // Special Packages
-  getPackages: (): SpecialPackage[] => {
-    const data = localStorage.getItem(STORAGE_KEYS.PACKAGES);
-    return data ? JSON.parse(data) : [];
+  getPackages: async (): Promise<SpecialPackage[]> => {
+    const res = await axios.get(`${API_BASE}/packages`);
+    return res.data;
   },
-  savePackage: (pkg: Omit<SpecialPackage, 'id'>) => {
-    const packages = adminStorage.getPackages();
-    const newPackage: SpecialPackage = {
-      ...pkg,
-      id: Math.random().toString(36).substr(2, 9)
-    };
-    packages.push(newPackage);
-    localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(packages));
-    return newPackage;
+  savePackage: async (pkg: Omit<SpecialPackage, 'id'>): Promise<SpecialPackage> => {
+    const res = await axios.post(`${API_BASE}/packages`, pkg);
+    return res.data;
   },
-  updatePackage: (id: string, updatedPkg: Partial<SpecialPackage>) => {
-    const packages = adminStorage.getPackages().map(p => 
-      p.id === id ? { ...p, ...updatedPkg } : p
-    );
-    localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(packages));
+  updatePackage: async (id: string, updatedPkg: Partial<SpecialPackage>): Promise<SpecialPackage> => {
+    const res = await axios.put(`${API_BASE}/packages/${id}`, updatedPkg);
+    return res.data;
   },
-  deletePackage: (id: string) => {
-    const packages = adminStorage.getPackages().filter(p => p.id !== id);
-    localStorage.setItem(STORAGE_KEYS.PACKAGES, JSON.stringify(packages));
+  deletePackage: async (id: string): Promise<void> => {
+    await axios.delete(`${API_BASE}/packages/${id}`);
   }
 };

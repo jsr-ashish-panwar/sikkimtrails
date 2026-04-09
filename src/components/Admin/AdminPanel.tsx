@@ -31,10 +31,19 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     }
   }, [isAuthenticated]);
 
-  const refreshData = () => {
-    setBookings(adminStorage.getBookings().reverse());
-    setHelps(adminStorage.getHelpRequests().reverse());
-    setPackages(adminStorage.getPackages().reverse());
+  const refreshData = async () => {
+    try {
+      const [fetchedBookings, fetchedHelps, fetchedPackages] = await Promise.all([
+        adminStorage.getBookings(),
+        adminStorage.getHelpRequests(),
+        adminStorage.getPackages()
+      ]);
+      setBookings(fetchedBookings.reverse());
+      setHelps(fetchedHelps.reverse());
+      setPackages(fetchedPackages.reverse());
+    } catch (error) {
+      console.error("Error fetching admin data:", error);
+    }
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -46,30 +55,30 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
     }
   };
 
-  const handleDeleteBooking = (id: string) => {
+  const handleDeleteBooking = async (id: string) => {
     if (window.confirm('Delete this booking?')) {
-      adminStorage.deleteBooking(id);
+      await adminStorage.deleteBooking(id);
       refreshData();
     }
   };
 
-  const handleDeleteHelp = (id: string) => {
+  const handleDeleteHelp = async (id: string) => {
     if (window.confirm('Delete this help request?')) {
-      adminStorage.deleteHelpRequest(id);
+      await adminStorage.deleteHelpRequest(id);
       refreshData();
     }
   };
 
-  const handleDeletePackage = (id: string) => {
+  const handleDeletePackage = async (id: string) => {
     if (window.confirm('Delete this package?')) {
-      adminStorage.deletePackage(id);
+      await adminStorage.deletePackage(id);
       refreshData();
     }
   };
 
-  const handleAddPackage = (e: React.FormEvent) => {
+  const handleAddPackage = async (e: React.FormEvent) => {
     e.preventDefault();
-    adminStorage.savePackage({
+    await adminStorage.savePackage({
       ...newPackage,
       services: newPackage.services.filter(s => s.trim() !== ''),
       safety: newPackage.safety.filter(s => s.trim() !== '')

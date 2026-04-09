@@ -29,8 +29,15 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
 
   useEffect(() => {
     // Load special packages from storage
-    const loaded = adminStorage.getPackages();
-    setSpecialPackages(loaded);
+    const fetchPackages = async () => {
+      try {
+        const loaded = await adminStorage.getPackages();
+        setSpecialPackages(loaded);
+      } catch (error) {
+         console.error('Failed to load packages:', error);
+      }
+    };
+    fetchPackages();
   }, []);
 
   const handlePackageBooking = (packageName: string) => {
