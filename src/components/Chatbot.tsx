@@ -12,9 +12,10 @@ interface ChatbotProps {
   currentLanguage: string;
   isOpen: boolean;
   onClose: () => void;
+  theme: string;
 }
 
-const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) => {
+const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, theme }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       type: 'bot',
@@ -65,7 +66,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
         timestamp: new Date(),
         content: (
           <div className="space-y-3">
-             <div className="whitespace-pre-wrap text-sm leading-relaxed text-gray-800">{reply}</div>
+             <div className={`whitespace-pre-wrap text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{reply}</div>
              
              {showPackages && (
                 <div className="mt-4 p-3 bg-green-50/50 rounded-xl border border-green-100">
@@ -100,10 +101,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
                     <ShieldAlert className="h-5 w-5 mr-2" />
                     <span>EMERGENCY HELPLINE</span>
                   </div>
-                  <div className="flex align-center justify-between bg-white px-4 py-3 border border-red-200 rounded-lg shadow-sm">
+                  <div className={`flex align-center justify-between px-4 py-3 border rounded-lg shadow-sm ${theme === 'dark' ? 'bg-slate-800 border-red-900/40' : 'bg-white border-red-200'}`}>
                     <div className="flex items-center">
                        <Navigation className="h-5 w-5 text-red-600 mr-3" />
-                       <span className="text-sm font-bold text-gray-800">Tourist Police</span>
+                       <span className={`text-sm font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>Tourist Police</span>
                     </div>
                     <a href="tel:1097" className="flex items-center bg-red-100 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-200 transition-colors">
                       <PhoneCall className="h-4 w-4 mr-1 text-red-700" />
@@ -115,8 +116,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
           </div>
         )
       };
-    } catch (error) {
-      console.error("Chat API Error:", error);
+    } catch (error: any) {
+      console.error("Saarthi Chat Error:", {
+        message: error.message,
+        stack: error.stack,
+        url: "/api/chat"
+      });
       return {
         type: 'bot',
         timestamp: new Date(),
@@ -153,7 +158,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 w-full h-full sm:w-[420px] sm:h-[650px] bg-white sm:rounded-[2.5rem] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.35)] border border-gray-100 flex flex-col z-50 overflow-hidden text-gray-900 transition-all duration-300">
+    <div className={`fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 w-full h-full sm:w-[420px] sm:h-[650px] sm:rounded-[2.5rem] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.35)] border flex flex-col z-50 overflow-hidden transition-all duration-300 ${
+      theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-gray-100 text-gray-900'
+    }`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-red-600 via-orange-600 to-red-600 text-white p-6 pb-8 flex justify-between items-center shrink-0 shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
@@ -173,7 +180,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-gray-50/80 scrollbar-thin rounded-t-[2.5rem] -mt-6 relative z-20">
+      <div className={`flex-1 overflow-y-auto p-5 space-y-6 scrollbar-thin rounded-t-[2.5rem] -mt-6 relative z-20 ${
+        theme === 'dark' ? 'bg-slate-800/80' : 'bg-gray-50/80'
+      }`}>
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.type === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
             {m.type === 'bot' && (
@@ -184,7 +193,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
             <div className={`max-w-[85%] px-5 py-3.5 rounded-3xl text-sm shadow-sm transition-all ${
               m.type === 'user' 
                 ? 'bg-red-600 text-white rounded-br-none font-medium' 
-                : 'bg-white border border-gray-200 rounded-bl-none text-gray-800 ring-4 ring-black/0 shadow-md'
+                : `${theme === 'dark' ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-white border-gray-200 text-gray-800'} border rounded-bl-none ring-4 ring-black/0 shadow-md`
             }`}>
               {m.content}
             </div>
@@ -204,7 +213,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
       </div>
 
       {/* Quick Suggestion Chips */}
-      <div className="px-5 py-3 bg-white/80 backdrop-blur-md flex flex-wrap gap-2 border-t border-gray-100 overflow-x-auto scrollbar-hide max-h-32">
+      <div className={`px-5 py-3 backdrop-blur-md flex flex-wrap gap-2 border-t overflow-x-auto scrollbar-hide max-h-32 ${
+        theme === 'dark' ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-gray-100'
+      }`}>
         {[
           { l: '🗺️ Local Food', q: 'What are the famous local dishes in Sikkim?' },
           { l: '🚠 Tour Packages', q: 'What are the available tour packages right now?' },
@@ -214,7 +225,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
           <button 
             key={i} 
             onClick={() => { setInputMessage(btn.q); setTimeout(handleSendMessage, 50); }} 
-            className="text-[10px] whitespace-nowrap bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-2xl hover:border-red-600 hover:text-red-600 hover:bg-red-50 transition-all active:scale-95 shadow-sm font-bold tracking-tight"
+            className={`text-[10px] whitespace-nowrap border px-4 py-2.5 rounded-2xl transition-all active:scale-95 shadow-sm font-bold tracking-tight ${
+              theme === 'dark' 
+                ? 'bg-slate-800 border-slate-700 text-slate-300 hover:border-red-500 hover:text-red-400 hover:bg-red-900/20' 
+                : 'bg-white border-gray-200 text-gray-700 hover:border-red-600 hover:text-red-600 hover:bg-red-50'
+            }`}
           >
             {btn.l}
           </button>
@@ -222,15 +237,19 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose }) =
       </div>
 
       {/* Input */}
-      <div className="p-5 bg-white border-t border-gray-100 relative">
-        <div className="flex items-center bg-gray-50 rounded-[2rem] p-1.5 focus-within:ring-2 focus-within:ring-red-500/20 transition-all border border-gray-200">
+      <div className={`p-5 border-t relative ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-100'}`}>
+        <div className={`flex items-center rounded-[2rem] p-1.5 focus-within:ring-2 focus-within:ring-red-500/20 transition-all border ${
+          theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-200'
+        }`}>
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask your Gemini Saarthi..."
-            className="flex-1 bg-transparent border-none px-5 py-2.5 text-sm focus:outline-none font-medium text-gray-800 placeholder:text-gray-400"
+            className={`flex-1 bg-transparent border-none px-5 py-2.5 text-sm focus:outline-none font-medium ${
+              theme === 'dark' ? 'text-slate-100 placeholder:text-slate-500' : 'text-gray-800 placeholder:text-gray-400'
+            }`}
           />
           <button 
             onClick={handleSendMessage} 

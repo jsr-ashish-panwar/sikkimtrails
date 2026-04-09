@@ -5,6 +5,8 @@ import { connectDB } from './db.js';
 import Package from './models/Package.js';
 import Booking from './models/Booking.js';
 import HelpRequest from './models/HelpRequest.js';
+import User from './models/User.js';
+import bcrypt from 'bcryptjs';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 dotenv.config();
@@ -47,22 +49,41 @@ app.post('/api/chat', async (req, res) => {
   try {
     const { message, language } = req.body;
     
-    // Using v1beta as systemInstruction is a beta feature. 
-    // gemini-2.5-flash is confirmed to work with this API key.
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.5-flash",
-      systemInstruction: SYSTEM_PROMPT
-    }, { 
-      apiVersion: "v1beta" 
-    });
-    
-    const userContext = `User Language: ${language || 'English'}\nUser: ${message}`;
-    const result = await model.generateContent(userContext);
-    const responseText = result.response.text();
+    // Function to call Gemini with a simple retry for 503/429
+    const callGeminiWithRetry = async (prompt, maxRetries = 3) => {
+      let lastError;
+      for (let i = 0; i <= maxRetries; i++) {
+        try {
+          // gemini-2.5-flash is an experimental high-speed model that worked earlier
+          console.log(`[AI REQUEST] Attempt ${i + 1} using gemini-2.5-flash...`);
+          const model = genAI.getGenerativeModel({ 
+            model: "gemini-2.5-flash" 
+          }, { 
+            apiVersion: "v1beta" 
+          });
+          const result = await model.generateContent(prompt);
+          return result.response.text();
+        } catch (error) {
+          lastError = error;
+          const isRetryable = error.message?.includes('503') || error.message?.includes('429');
+          console.error(`Gemini Attempt ${i + 1} Error:`, error.message);
+          if (isRetryable && i < maxRetries) {
+            console.log(`[RETRYING] Gemini Busy (Attempt ${i + 1}/${maxRetries}). Waiting 2s...`);
+            await new Promise(resolve => setTimeout(resolve, 2000)); 
+            continue;
+          }
+          throw error;
+        }
+      }
+    };
+
+    const combinedPrompt = `${SYSTEM_PROMPT}\n\nUser Language: ${language || 'English'}\nUser: ${message}\nSaarthi:`;
+    const responseText = await callGeminiWithRetry(combinedPrompt);
     
     res.json({ reply: responseText });
   } catch (error) {
-    console.error('Gemini Error Details:', error);
+    console.error('--- Gemini API Error Details ---');
+    console.error(error);
     
     const msgLower = req.body.message?.toLowerCase() || "";
     let fallbackText = "";
@@ -190,6 +211,65 @@ app.delete('/api/help-requests/:id', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Authentication Routes
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const { name, phone, email, password } = req.body;
+    
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create new user
+    const newUser = new User({
+      name,
+      phone,
+      email,
+      password: hashedPassword
+    });
+
+    await newUser.save();
+    res.status(201).json({ message: 'User registered successfully', user: { name, email } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    res.json({ 
+      message: 'Login successful', 
+      user: { 
+        id: user._id,
+        name: user.name, 
+        email: user.email 
+      } 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server running on http://127.0.0.1:${PORT}`);
 });
