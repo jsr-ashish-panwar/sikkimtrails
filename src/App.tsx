@@ -256,7 +256,7 @@ const App: React.FC = () => {
         </div>
       </section>
 
-      <Packages currentLanguage={currentLanguage} />
+      <Packages t={t} />
 
       <div className="fixed bottom-8 right-8 z-50">
         <button onClick={() => setIsChatOpen(!isChatOpen)} className="group flex items-center gap-3 px-6 py-4 bg-orange-600 text-white rounded-2xl shadow-2xl transition-all hover:scale-105"><MessageCircle size={24} /><span className="font-semibold">{t.chatWithSaarthi}</span></button>

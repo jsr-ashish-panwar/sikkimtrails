@@ -24,8 +24,16 @@ interface PackageProps {
 }
 
 const Packages: React.FC<PackageProps> = ({ t }) => {
-  const tp = t.tourPackages;
+  const tp = t?.tourPackages;
   const [specialPackages, setSpecialPackages] = useState<any[]>([]);
+
+  if (!tp || !tp.basic || !tp.premium || !tp.luxury) {
+    return (
+      <div className="py-24 text-center">
+        <p className="text-gray-400 italic">Travel packages loading...</p>
+      </div>
+    );
+  }
 
   useEffect(() => {
     // Load special packages from storage
