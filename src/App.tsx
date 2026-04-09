@@ -75,6 +75,35 @@ const translations = {
       homestay: 'Monastery Homestay',
       crafts: 'Traditional Crafts'
     },
+    tourPackages: {
+      title: 'Tour Packages',
+      subtitle: 'Discover the magic of Sikkim Trails with our spiritual and adventure journeys.',
+      basic: {
+        title: 'Basic Package',
+        duration: '3 Days / 2 Nights',
+        services: ['Budget Hotel Stay', 'Local Sightseeing (Gangtok)', 'Shared Transport', 'Meals Not Included']
+      },
+      premium: {
+        title: 'Premium Package',
+        duration: '5 Days / 4 Nights',
+        services: ['3-Star Hotel Stay', 'Gangtok + Tsomgo Lake + Baba Mandir', 'Breakfast & Dinner Included', 'Private/Shared Transport', 'Guided Tour']
+      },
+      luxury: {
+        title: 'Luxury Package',
+        duration: '7 Days / 6 Nights',
+        services: ['5-Star Hotel/Resort Stay', 'Gangtok + North Sikkim (Lachung, Yumthang)', 'All Meals Included', 'Private Cab & Personal Guide', 'Priority Booking & VIP Experience']
+      },
+      safetySection: {
+        title: 'Safety & Tracking System',
+        description: "Your safety is our spiritual commitment. We've built a robust digital framework to ensure the security of every traveler 24/7.",
+        features: {
+          gps: { title: 'Live GPS Tracking', desc: 'Real-time location monitoring.' },
+          sos: { title: 'Emergency SOS', desc: 'Instant SOS response.' },
+          support: { title: '24/7 Support', desc: 'Dedicated assistance team.' },
+          partners: { title: 'Verified Partners', desc: 'Fully vetted drivers & guides.' }
+        }
+      }
+    },
     footer: {
       description: 'Discover the sacred monasteries and spiritual heritage of Sikkim.',
       copyright: '© 2025 Sikkim Trails. All rights reserved.',
@@ -110,6 +139,35 @@ const translations = {
       peman: { name: 'पेमायंगत्से मठ', description: 'पश्चिमी सिक्किम में न्यिंग्मा परंपरा का प्रमुख मठ।', location: 'पेलिंग, सिक्किम' }
     },
     experiences: { meditation: 'ध्यान साधना', philosophy: 'बौद्ध दर्शन', homestay: 'मठ होमस्टे', crafts: 'पारंपरिक शिल्प' },
+    tourPackages: {
+      title: 'टूर पैकेज',
+      subtitle: 'सिक्किम ट्रेल्स के जादू को हमारी आध्यात्मिक और साहसिक यात्राओं के साथ खोजें।',
+      basic: {
+        title: 'बेसिक पैकेज',
+        duration: '3 दिन / 2 रात',
+        services: ['बजट होटल स्टे', 'स्थानीय दर्शनीय स्थल (गंगटोक)', 'साझा परिवहन', 'भोजन शामिल नहीं']
+      },
+      premium: {
+        title: 'प्रीमियम पैकेज',
+        duration: '5 दिन / 4 रात',
+        services: ['3-सितारा होटल स्टे', 'गंगटोक + त्सोमगो झील + बाबा मंदिर', 'नाश्ता और रात का खाना शामिल', 'निजी/साझा परिवहन', 'निर्देशित टूर']
+      },
+      luxury: {
+        title: 'लक्जरी पैकेज',
+        duration: '7 दिन / 6 रात',
+        services: ['5-सितारा होटल / रिसॉर्ट स्टे', 'गंगटोक + उत्तरी सिक्किम (लाचुंग, युमथांग)', 'सभी भोजन शामिल', 'निजी टैब और व्यक्तिगत गाइड', 'प्राथमिकता बुकिंग और VIP अनुभव']
+      },
+      safetySection: {
+        title: 'सुरक्षा और ट्रैकिंग प्रणाली',
+        description: "आपकी सुरक्षा हमारी आध्यात्मिक प्रतिबद्धता है। हमने हर यात्री की 24/7 सुरक्षा सुनिश्चित करने के लिए एक मजबूत डिजिटल ढांचा तैयार किया है।",
+        features: {
+          gps: { title: 'लाइव GPS ट्रैकिंग', desc: 'वास्तविक समय स्थान निगरानी।' },
+          sos: { title: 'इमरजेंसी SOS', desc: 'तुरंत SOS प्रतिक्रिया।', },
+          support: { title: '24/7 सहायता', desc: 'समर्पित सहायता टीम।' },
+          partners: { title: 'सत्यापित भागीदार', desc: 'पूरी तरह से जांचे गए ड्राइवर और गाइड।' }
+        }
+      }
+    },
     footer: { description: 'सिक्किम के पवित्र मठों और आध्यात्मिक विरासत की खोज करें।', copyright: '© 2025 सिक्किम ट्रेल्स। सर्वाधिकार सुरक्षित।', ar: { viewInAr: 'AR में देखें' } }
   },
   नेपाली: {
@@ -141,8 +199,38 @@ const translations = {
       peman: { name: 'पेमायंगत्से गुम्बा', description: 'पश्चिम सिक्किममा न्यिङ्मा परम्पराको प्रमुख गुम्बा।', location: 'पेलिङ, सिक्किम' }
     },
     experiences: { meditation: 'ध्यान शिविर', philosophy: 'बौद्ध दर्शन', homestay: 'गुम्बा होमस्टे', crafts: 'पारम्परिक हस्तकला' },
+    tourPackages: {
+      title: 'टूर प्याकेजहरू',
+      subtitle: 'सिक्किम ट्रेल्सको जादू हाम्रो आध्यात्मिक र साहसिक यात्राहरूको साथ पत्ता लगाउनुहोस्।',
+      basic: {
+        title: 'आधारभूत प्याकेज',
+        duration: '३ दिन / २ रात',
+        services: ['बजेट होटल बसाई', 'स्थानीय दर्शनीय स्थलहरू (गान्तोक)', 'साझा यातायात', 'खाना समावेश छैन']
+      },
+      premium: {
+        title: 'प्रीमियम प्याकेज',
+        duration: '५ दिन / ४ रात',
+        services: ['३-तारे होटल बसाई', 'गान्तोक + त्सोम्गो लेक + बाबा मन्दिर', 'बिहानको खाजा र रातीको खाना समावेश', 'निजी/साझा यातायात', 'गाइडेड टुर']
+      },
+      luxury: {
+        title: 'लक्जरी प्याकेज',
+        duration: '७ दिन / ६ रात',
+        services: ['५-तारे होटल / रिसॉर्ट बसाई', 'गान्तोक + उत्तरी सिक्किम (लाचुङ, युमथाङ)', 'सबै खाना समावेश', 'निजी ट्याक्सी र व्यक्तिगत गाइड', 'प्राथमिकता बुकिंग र VIP अनुभव']
+      },
+      safetySection: {
+        title: 'सुरक्षा र ट्र्याकिङ प्रणाली',
+        description: "तपाईको सुरक्षा हाम्रो आध्यात्मिक प्रतिबद्धता हो। हामीले प्रत्येक यात्रीको २४/७ सुरक्षा सुनिश्चित गर्न बलियो डिजिटल पूर्वाधार निर्माण गरेका छौं।",
+        features: {
+          gps: { title: 'प्रत्यक्ष GPS ट्र्याकिङ', desc: 'वास्तविक समय स्थान निगरानी।' },
+          sos: { title: 'आपतकालीन SOS', desc: 'तुरुन्त SOS प्रतिक्रिया।' },
+          support: { title: '२४/७ समर्थन', desc: 'समर्पित सहायता टोली।' },
+          partners: { title: 'प्रमाणित साझेदारहरू', desc: 'पूर्ण रूपमा जाँच गरिएका चालक र गाइडहरू।' }
+        }
+      }
+    },
     footer: { description: 'सिक्किमको आध्यात्मिक विरासत र पवित्र गुम्बाहरू अन्वेषण गर्नुहोस्।', copyright: '© २०२५ सिक्किम ट्रेल्स। सबै अधिकार सुरक्षित।', ar: { viewInAr: 'AR मा हेर्नुहोस्' } }
   }
+
 };
 
 const App: React.FC = () => {
