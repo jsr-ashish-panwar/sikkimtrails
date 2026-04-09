@@ -1,0 +1,401 @@
+﻿import React, { useState, useEffect } from 'react';
+import { Mountain, MapPin, MessageCircle, X, Star, Camera, Phone, Mail, MapPin as LocationIcon, Clock, Heart, Award, Menu, Shield, Users, Sparkles, BookOpen, Music, Sun, Moon, LogOut } from 'lucide-react';
+import Header from './components/Header';
+import Chatbot from './components/Chatbot';
+import '@google/model-viewer';
+import ARModal from './components/ARModal';
+import Packages from './components/Packages';
+import AdminPanel from './components/Admin/AdminPanel';
+
+// TypeScript declaration for model-viewer
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'model-viewer': React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement> & {
+          src?: string;
+          alt?: string;
+          ar?: boolean;
+          'ar-modes'?: string;
+          'camera-controls'?: boolean;
+          'auto-rotate'?: boolean;
+          'shadow-intensity'?: string;
+          'ios-src'?: string;
+        },
+        HTMLElement
+      >;
+    }
+  }
+}
+
+const translations = {
+  English: {
+    appName: 'SikkimTrails',
+    tagline: 'Sacred Monasteries of Sikkim',
+    heroTitle: 'Sacred Monasteries of Sikkim',
+    heroSubtitle: 'Discover ancient wisdom, peaceful meditation, and spiritual enlightenment in the heart of the Himalayas.',
+    beginJourney: 'Begin Spiritual Journey',
+    exploreMonasteries: 'Explore Monasteries',
+    nav: {
+      home: 'Home',
+      monasteries: 'Monasteries',
+      spiritualJourney: 'Spiritual Journey',
+      traditions: 'Buddhist Traditions',
+      packages: 'Tour Packages',
+      experiences: 'Experiences',
+      about: 'About',
+      contact: 'Contact',
+    },
+    monasteryShowcase: 'Sacred Monasteries',
+    monasteryShowcaseSubtitle: 'Explore ancient Buddhist monasteries nestled in the Himalayan landscape',
+    spiritualExperiences: 'Spiritual Experiences',
+    spiritualExperiencesSubtitle: 'Immerse yourself in authentic Buddhist practices and Sikkimese culture',
+    bookExperience: 'Book Experience',
+    chatWithSaarthi: 'Chat with Saarthi!',
+    monasteries: {
+      rumtek: {
+        name: 'Rumtek Monastery',
+        description: 'The seat of the Gyalwang Karmapa, a masterpiece of Tibetan architecture.',
+        location: 'Marchak, Sikkim'
+      },
+      enchey: {
+        name: 'Enchey Monastery',
+        description: 'Beautiful monastery overlooking Gangtok, established in 1909.',
+        location: 'Gangtok, East Sikkim'
+      },
+      peman: {
+        name: 'Pemayangtse Monastery',
+        description: 'The premier monastery of the Nyingma tradition in West Sikkim.',
+        location: 'Pelling, Sikkim'
+      }
+    },
+    experiences: {
+      meditation: 'Meditation Retreat',
+      philosophy: 'Buddhist Philosophy',
+      homestay: 'Monastery Homestay',
+      crafts: 'Traditional Crafts'
+    },
+    tourPackages: {
+      title: 'Tour Packages',
+      subtitle: 'Discover the magic of Sikkim Trails with our spiritual and adventure journeys.',
+      basic: {
+        title: 'Basic Package',
+        duration: '3 Days / 2 Nights',
+        services: ['Budget Hotel Stay', 'Local Sightseeing (Gangtok)', 'Shared Transport', 'Meals Not Included']
+      },
+      premium: {
+        title: 'Premium Package',
+        duration: '5 Days / 4 Nights',
+        services: ['3-Star Hotel Stay', 'Gangtok + Tsomgo Lake + Baba Mandir', 'Breakfast & Dinner Included', 'Private/Shared Transport', 'Guided Tour']
+      },
+      luxury: {
+        title: 'Luxury Package',
+        duration: '7 Days / 6 Nights',
+        services: ['5-Star Hotel/Resort Stay', 'Gangtok + North Sikkim (Lachung, Yumthang)', 'All Meals Included', 'Private Cab & Personal Guide', 'Priority Booking & VIP Experience']
+      },
+      safetySection: {
+        title: 'Safety & Tracking System',
+        description: "Your safety is our spiritual commitment. We've built a robust digital framework to ensure the security of every traveler 24/7.",
+        features: {
+          gps: { title: 'Live GPS Tracking', desc: 'Real-time location monitoring.' },
+          sos: { title: 'Emergency SOS', desc: 'Instant SOS response.' },
+          support: { title: '24/7 Support', desc: 'Dedicated assistance team.' },
+          partners: { title: 'Verified Partners', desc: 'Fully vetted drivers & guides.' }
+        }
+      }
+    },
+    footer: {
+      description: 'Discover the sacred monasteries and spiritual heritage of Sikkim.',
+      copyright: '┬⌐ 2025 Sikkim Trails. All rights reserved.',
+      ar: { viewInAr: 'View in AR' }
+    }
+  },
+  αñ╣αñ┐αñéαñªαÑÇ: {
+    appName: 'αñÿαÑéαñ«αÑï αñçαñéαñíαñ┐αñ»αñ╛',
+    tagline: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñòαÑç αñ¬αñ╡αñ┐αññαÑìαñ░ αñ«αñá',
+    heroTitle: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñòαÑç αñ¬αñ╡αñ┐αññαÑìαñ░ αñ«αñá',
+    heroSubtitle: 'αñ╣αñ┐αñ«αñ╛αñ▓αñ» αñòαÑç αñ╣αÑâαñªαñ» αñ«αÑçαñé αñ¬αÑìαñ░αñ╛αñÜαÑÇαñ¿ αñ£αÑìαñ₧αñ╛αñ¿, αñ╢αñ╛αñéαññαñ┐αñ¬αÑéαñ░αÑìαñú αñºαÑìαñ»αñ╛αñ¿ αñöαñ░ αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ£αÑìαñ₧αñ╛αñ¿ αñòαÑÇ αñûαÑïαñ£ αñòαñ░αÑçαñéαÑñ',
+    beginJourney: 'αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ»αñ╛αññαÑìαñ░αñ╛ αñ╢αÑüαñ░αÑé αñòαñ░αÑçαñé',
+    exploreMonasteries: 'αñ«αñáαÑïαñé αñòαñ╛ αñàαñ¿αÑìαñ╡αÑçαñ╖αñú αñòαñ░αÑçαñé',
+    nav: {
+      home: 'αñ╣αÑïαñ«',
+      monasteries: 'αñ«αñá',
+      spiritualJourney: 'αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ»αñ╛αññαÑìαñ░αñ╛',
+      traditions: 'αñ¼αÑîαñªαÑìαñº αñ¬αñ░αñéαñ¬αñ░αñ╛αñÅαñé',
+      packages: 'αñƒαÑéαñ░ αñ¬αÑêαñòαÑçαñ£',
+      experiences: 'αñàαñ¿αÑüαñ¡αñ╡',
+      about: 'αñ╣αñ«αñ╛αñ░αÑç αñ¼αñ╛αñ░αÑç αñ«αÑçαñé',
+      contact: 'αñ╕αñéαñ¬αñ░αÑìαñò'
+    },
+    monasteryShowcase: 'αñ¬αñ╡αñ┐αññαÑìαñ░ αñ«αñá',
+    monasteryShowcaseSubtitle: 'αñ╣αñ┐αñ«αñ╛αñ▓αñ»αÑÇ αñ¬αñ░αñ┐αñªαÑâαñ╢αÑìαñ» αñ«αÑçαñé αñ¼αñ╕αÑç αñ¬αÑìαñ░αñ╛αñÜαÑÇαñ¿ αñ¼αÑîαñªαÑìαñº αñ«αñáαÑïαñé αñòαñ╛ αñàαñ¿αÑìαñ╡αÑçαñ╖αñú αñòαñ░αÑçαñé',
+    spiritualExperiences: 'αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñàαñ¿αÑüαñ¡αñ╡',
+    spiritualExperiencesSubtitle: 'αñ¬αÑìαñ░αñ╛αñ«αñ╛αñúαñ┐αñò αñ¼αÑîαñªαÑìαñº αñ¬αÑìαñ░αñÑαñ╛αñôαñé αñöαñ░ αñ╕αñ┐αñòαÑìαñòαñ┐αñ«αÑÇ αñ╕αñéαñ╕αÑìαñòαÑâαññαñ┐ αñ«αÑçαñé αñíαÑéαñ¼ αñ£αñ╛αñÅαñé',
+    bookExperience: 'αñàαñ¿αÑüαñ¡αñ╡ αñ¼αÑüαñò αñòαñ░αÑçαñé',
+    chatWithSaarthi: 'αñ╕αñ╛αñ░αñÑαÑÇ αñòαÑç αñ╕αñ╛αñÑ αñÜαÑêαñƒ αñòαñ░αÑçαñé!',
+    monasteries: {
+      rumtek: { name: 'αñ░αÑüαñ«αñƒαÑçαñò αñ«αñá', description: 'αñùαÑìαñ»αñ╛αñ▓αñ╡αñ╛αñéαñù αñòαñ░αÑìαñ«αñ╛αñ¬αñ╛ αñòαÑÇ αñ╕αÑÇαñƒ, αññαñ┐αñ¼αÑìαñ¼αññαÑÇ αñ╡αñ╛αñ╕αÑìαññαÑüαñòαñ▓αñ╛ αñòαÑÇ αñÅαñò αñëαññαÑìαñòαÑâαñ╖αÑìαñƒ αñòαÑâαññαñ┐αÑñ', location: 'αñ«αñ╛αñ░αñÜαñò, αñ╕αñ┐αñòαÑìαñòαñ┐αñ«' },
+      enchey: { name: 'αñÅαñ¿αñÜαÑçαñ» αñ«αñá', description: 'αñùαñéαñùαñƒαÑïαñò αñòαÑç αñèαñ¬αñ░ αñ╕αÑüαñéαñªαñ░ αñ«αñá, 1909 αñ«αÑçαñé αñ╕αÑìαñÑαñ╛αñ¬αñ┐αññαÑñ', location: 'αñùαñéαñùαñƒαÑïαñò, αñ╕αñ┐αñòαÑìαñòαñ┐αñ«' },
+      peman: { name: 'αñ¬αÑçαñ«αñ╛αñ»αñéαñùαññαÑìαñ╕αÑç αñ«αñá', description: 'αñ¬αñ╢αÑìαñÜαñ┐αñ«αÑÇ αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñ«αÑçαñé αñ¿αÑìαñ»αñ┐αñéαñùαÑìαñ«αñ╛ αñ¬αñ░αñéαñ¬αñ░αñ╛ αñòαñ╛ αñ¬αÑìαñ░αñ«αÑüαñû αñ«αñáαÑñ', location: 'αñ¬αÑçαñ▓αñ┐αñéαñù, αñ╕αñ┐αñòαÑìαñòαñ┐αñ«' }
+    },
+    experiences: { meditation: 'αñºαÑìαñ»αñ╛αñ¿ αñ╕αñ╛αñºαñ¿αñ╛', philosophy: 'αñ¼αÑîαñªαÑìαñº αñªαñ░αÑìαñ╢αñ¿', homestay: 'αñ«αñá αñ╣αÑïαñ«αñ╕αÑìαñƒαÑç', crafts: 'αñ¬αñ╛αñ░αñéαñ¬αñ░αñ┐αñò αñ╢αñ┐αñ▓αÑìαñ¬' },
+    tourPackages: {
+      title: 'αñƒαÑéαñ░ αñ¬αÑêαñòαÑçαñ£',
+      subtitle: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñƒαÑìαñ░αÑçαñ▓αÑìαñ╕ αñòαÑç αñ£αñ╛αñªαÑé αñòαÑï αñ╣αñ«αñ╛αñ░αÑÇ αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñöαñ░ αñ╕αñ╛αñ╣αñ╕αñ┐αñò αñ»αñ╛αññαÑìαñ░αñ╛αñôαñé αñòαÑç αñ╕αñ╛αñÑ αñûαÑïαñ£αÑçαñéαÑñ',
+      basic: {
+        title: 'αñ¼αÑçαñ╕αñ┐αñò αñ¬αÑêαñòαÑçαñ£',
+        duration: '3 αñªαñ┐αñ¿ / 2 αñ░αñ╛αññ',
+        services: ['αñ¼αñ£αñƒ αñ╣αÑïαñƒαñ▓ αñ╕αÑìαñƒαÑç', 'αñ╕αÑìαñÑαñ╛αñ¿αÑÇαñ» αñªαñ░αÑìαñ╢αñ¿αÑÇαñ» αñ╕αÑìαñÑαñ▓ (αñùαñéαñùαñƒαÑïαñò)', 'αñ╕αñ╛αñ¥αñ╛ αñ¬αñ░αñ┐αñ╡αñ╣αñ¿', 'αñ¡αÑïαñ£αñ¿ αñ╢αñ╛αñ«αñ┐αñ▓ αñ¿αñ╣αÑÇαñé']
+      },
+      premium: {
+        title: 'αñ¬αÑìαñ░αÑÇαñ«αñ┐αñ»αñ« αñ¬αÑêαñòαÑçαñ£',
+        duration: '5 αñªαñ┐αñ¿ / 4 αñ░αñ╛αññ',
+        services: ['3-αñ╕αñ┐αññαñ╛αñ░αñ╛ αñ╣αÑïαñƒαñ▓ αñ╕αÑìαñƒαÑç', 'αñùαñéαñùαñƒαÑïαñò + αññαÑìαñ╕αÑïαñ«αñùαÑï αñ¥αÑÇαñ▓ + αñ¼αñ╛αñ¼αñ╛ αñ«αñéαñªαñ┐αñ░', 'αñ¿αñ╛αñ╢αÑìαññαñ╛ αñöαñ░ αñ░αñ╛αññ αñòαñ╛ αñûαñ╛αñ¿αñ╛ αñ╢αñ╛αñ«αñ┐αñ▓', 'αñ¿αñ┐αñ£αÑÇ/αñ╕αñ╛αñ¥αñ╛ αñ¬αñ░αñ┐αñ╡αñ╣αñ¿', 'αñ¿αñ┐αñ░αÑìαñªαÑçαñ╢αñ┐αññ αñƒαÑéαñ░']
+      },
+      luxury: {
+        title: 'αñ▓αñòαÑìαñ£αñ░αÑÇ αñ¬αÑêαñòαÑçαñ£',
+        duration: '7 αñªαñ┐αñ¿ / 6 αñ░αñ╛αññ',
+        services: ['5-αñ╕αñ┐αññαñ╛αñ░αñ╛ αñ╣αÑïαñƒαñ▓ / αñ░αñ┐αñ╕αÑëαñ░αÑìαñƒ αñ╕αÑìαñƒαÑç', 'αñùαñéαñùαñƒαÑïαñò + αñëαññαÑìαññαñ░αÑÇ αñ╕αñ┐αñòαÑìαñòαñ┐αñ« (αñ▓αñ╛αñÜαÑüαñéαñù, αñ»αÑüαñ«αñÑαñ╛αñéαñù)', 'αñ╕αñ¡αÑÇ αñ¡αÑïαñ£αñ¿ αñ╢αñ╛αñ«αñ┐αñ▓', 'αñ¿αñ┐αñ£αÑÇ αñƒαÑêαñ¼ αñöαñ░ αñ╡αÑìαñ»αñòαÑìαññαñ┐αñùαññ αñùαñ╛αñçαñí', 'αñ¬αÑìαñ░αñ╛αñÑαñ«αñ┐αñòαññαñ╛ αñ¼αÑüαñòαñ┐αñéαñù αñöαñ░ VIP αñàαñ¿αÑüαñ¡αñ╡']
+      },
+      safetySection: {
+        title: 'αñ╕αÑüαñ░αñòαÑìαñ╖αñ╛ αñöαñ░ αñƒαÑìαñ░αÑêαñòαñ┐αñéαñù αñ¬αÑìαñ░αñúαñ╛αñ▓αÑÇ',
+        description: "αñåαñ¬αñòαÑÇ αñ╕αÑüαñ░αñòαÑìαñ╖αñ╛ αñ╣αñ«αñ╛αñ░αÑÇ αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ¬αÑìαñ░αññαñ┐αñ¼αñªαÑìαñºαññαñ╛ αñ╣αÑêαÑñ αñ╣αñ«αñ¿αÑç αñ╣αñ░ αñ»αñ╛αññαÑìαñ░αÑÇ αñòαÑÇ 24/7 αñ╕αÑüαñ░αñòαÑìαñ╖αñ╛ αñ╕αÑüαñ¿αñ┐αñ╢αÑìαñÜαñ┐αññ αñòαñ░αñ¿αÑç αñòαÑç αñ▓αñ┐αñÅ αñÅαñò αñ«αñ£αñ¼αÑéαññ αñíαñ┐αñ£αñ┐αñƒαñ▓ αñóαñ╛αñéαñÜαñ╛ αññαÑêαñ»αñ╛αñ░ αñòαñ┐αñ»αñ╛ αñ╣αÑêαÑñ",
+        features: {
+          gps: { title: 'αñ▓αñ╛αñçαñ╡ GPS αñƒαÑìαñ░αÑêαñòαñ┐αñéαñù', desc: 'αñ╡αñ╛αñ╕αÑìαññαñ╡αñ┐αñò αñ╕αñ«αñ» αñ╕αÑìαñÑαñ╛αñ¿ αñ¿αñ┐αñùαñ░αñ╛αñ¿αÑÇαÑñ' },
+          sos: { title: 'αñçαñ«αñ░αñ£αÑçαñéαñ╕αÑÇ SOS', desc: 'αññαÑüαñ░αñéαññ SOS αñ¬αÑìαñ░αññαñ┐αñòαÑìαñ░αñ┐αñ»αñ╛αÑñ', },
+          support: { title: '24/7 αñ╕αñ╣αñ╛αñ»αññαñ╛', desc: 'αñ╕αñ«αñ░αÑìαñ¬αñ┐αññ αñ╕αñ╣αñ╛αñ»αññαñ╛ αñƒαÑÇαñ«αÑñ' },
+          partners: { title: 'αñ╕αññαÑìαñ»αñ╛αñ¬αñ┐αññ αñ¡αñ╛αñùαÑÇαñªαñ╛αñ░', desc: 'αñ¬αÑéαñ░αÑÇ αññαñ░αñ╣ αñ╕αÑç αñ£αñ╛αñéαñÜαÑç αñùαñÅ αñíαÑìαñ░αñ╛αñçαñ╡αñ░ αñöαñ░ αñùαñ╛αñçαñíαÑñ' }
+        }
+      }
+    },
+    footer: { description: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñòαÑç αñ¬αñ╡αñ┐αññαÑìαñ░ αñ«αñáαÑïαñé αñöαñ░ αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ╡αñ┐αñ░αñ╛αñ╕αññ αñòαÑÇ αñûαÑïαñ£ αñòαñ░αÑçαñéαÑñ', copyright: '┬⌐ 2025 αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñƒαÑìαñ░αÑçαñ▓αÑìαñ╕αÑñ αñ╕αñ░αÑìαñ╡αñ╛αñºαñ┐αñòαñ╛αñ░ αñ╕αÑüαñ░αñòαÑìαñ╖αñ┐αññαÑñ', ar: { viewInAr: 'AR αñ«αÑçαñé αñªαÑçαñûαÑçαñé' } }
+  },
+  αñ¿αÑçαñ¬αñ╛αñ▓αÑÇ: {
+    appName: 'αñÿαÑüαñ«αÑìαñ«αÑï αñçαñ¿αÑìαñíαñ┐αñ»αñ╛',
+    tagline: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ«αñòαñ╛ αñ¬αñ╡αñ┐αññαÑìαñ░ αñùαÑüαñ«αÑìαñ¼αñ╛αñ╣αñ░αÑé',
+    heroTitle: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ«αñòαñ╛ αñ¬αñ╡αñ┐αññαÑìαñ░ αñùαÑüαñ«αÑìαñ¼αñ╛αñ╣αñ░αÑé',
+    heroSubtitle: 'αñ╣αñ┐αñ«αñ╛αñ▓αñ»αñòαÑï αñ«αÑüαñƒαÑüαñ«αñ╛ αñ¬αÑìαñ░αñ╛αñÜαÑÇαñ¿ αñ£αÑìαñ₧αñ╛αñ¿, αñ╢αñ╛αñ¿αÑìαññαñ┐αñ¬αÑéαñ░αÑìαñú αñºαÑìαñ»αñ╛αñ¿ αñ░ αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ£αÑìαñ₧αñ╛αñ¿αñòαÑï αñûαÑïαñ£ αñùαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑìαÑñ',
+    beginJourney: 'αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ»αñ╛αññαÑìαñ░αñ╛ αñ╕αÑüαñ░αÑü αñùαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑì',
+    exploreMonasteries: 'αñùαÑüαñ«αÑìαñ¼αñ╛αñ╣αñ░αÑéαñòαÑï αñàαñ¿αÑìαñ╡αÑçαñ╖αñú αñùαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑì',
+    nav: {
+      home: 'αñÿαñ░',
+      monasteries: 'αñùαÑüαñ«αÑìαñ¼αñ╛αñ╣αñ░αÑé',
+      spiritualJourney: 'αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ»αñ╛αññαÑìαñ░αñ╛',
+      traditions: 'αñ¼αÑîαñªαÑìαñº αñ¬αñ░αñ«αÑìαñ¬αñ░αñ╛αñ╣αñ░αÑé',
+      packages: 'αñƒαÑéαñ░ αñ¬αÑìαñ»αñ╛αñòαÑçαñ£αñ╣αñ░αÑé',
+      experiences: 'αñàαñ¿αÑüαñ¡αñ╡αñ╣αñ░αÑé',
+      about: 'αñ╣αñ╛αñ«αÑìαñ░αÑï αñ¼αñ╛αñ░αÑçαñ«αñ╛',
+      contact: 'αñ╕αñ«αÑìαñ¬αñ░αÑìαñò'
+    },
+    monasteryShowcase: 'αñ¬αñ╡αñ┐αññαÑìαñ░ αñùαÑüαñ«αÑìαñ¼αñ╛αñ╣αñ░αÑé',
+    monasteryShowcaseSubtitle: 'αñ╣αñ┐αñ«αñ╛αñ▓αñ»αÑÇ αñ¬αñ░αñ┐αñªαÑâαñ╢αÑìαñ»αñ«αñ╛ αñ░αñ╣αÑçαñòαñ╛ αñ¬αÑìαñ░αñ╛αñÜαÑÇαñ¿ αñ¼αÑîαñªαÑìαñº αñùαÑüαñ«αÑìαñ¼αñ╛αñ╣αñ░αÑé αñàαñ¿αÑìαñ╡αÑçαñ╖αñú αñùαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑì',
+    spiritualExperiences: 'αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñàαñ¿αÑüαñ¡αñ╡αñ╣αñ░αÑé',
+    spiritualExperiencesSubtitle: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ«αÑÇ αñ╕αñéαñ╕αÑìαñòαÑâαññαñ┐ αñ░ αñ¼αÑîαñªαÑìαñº αñàαñ¡αÑìαñ»αñ╛αñ╕αñ╣αñ░αÑéαñ«αñ╛ αñíαÑüαñ¼αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑì',
+    bookExperience: 'αñàαñ¿αÑüαñ¡αñ╡ αñ¼αÑüαñò αñùαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑì',
+    chatWithSaarthi: 'αñ╕αñ╛αñ░αñÑαÑÇαñ╕αñüαñù αñòαÑüαñ░αñ╛ αñùαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑì!',
+    monasteries: {
+      rumtek: { name: 'αñ░αÑüαñ«αñƒαÑçαñò αñùαÑüαñ«αÑìαñ¼αñ╛', description: 'αñùαÑìαñ»αñ╛αñ▓αÑìαñ╡αñ╛αñÖ αñòαñ░αÑìαñ«αñ╛αñ¬αñ╛αñòαÑï αñ«αÑüαñûαÑìαñ» αñ╕αÑìαñÑαñ╛αñ¿, αññαñ┐αñ¼αÑìαñ¼αññαÑÇ αñ╡αñ╛αñ╕αÑìαññαÑüαñòαñ▓αñ╛αñòαÑï αñ¿αñ«αÑüαñ¿αñ╛αÑñ', location: 'αñ«αñ╛αñ░αÑìαñÜαñò, αñ╕αñ┐αñòαÑìαñòαñ┐αñ«' },
+      enchey: { name: 'αñÅαñ¿αñÜαÑçαñ» αñùαÑüαñ«αÑìαñ¼αñ╛', description: 'αñùαñ╛αñ¿αÑìαññαÑïαñò αñ«αñ╛αñÑαñ┐ αñàαñ╡αñ╕αÑìαñÑαñ┐αññ αñ╕αÑüαñ¿αÑìαñªαñ░ αñùαÑüαñ«αÑìαñ¼αñ╛, αÑºαÑ»αÑªαÑ» αñ«αñ╛ αñ╕αÑìαñÑαñ╛αñ¬αñ┐αññαÑñ', location: 'αñùαñ╛αñ¿αÑìαññαÑïαñò, αñ╕αñ┐αñòαÑìαñòαñ┐αñ«' },
+      peman: { name: 'αñ¬αÑçαñ«αñ╛αñ»αñéαñùαññαÑìαñ╕αÑç αñùαÑüαñ«αÑìαñ¼αñ╛', description: 'αñ¬αñ╢αÑìαñÜαñ┐αñ« αñ╕αñ┐αñòαÑìαñòαñ┐αñ«αñ«αñ╛ αñ¿αÑìαñ»αñ┐αñÖαÑìαñ«αñ╛ αñ¬αñ░αñ«αÑìαñ¬αñ░αñ╛αñòαÑï αñ¬αÑìαñ░αñ«αÑüαñû αñùαÑüαñ«αÑìαñ¼αñ╛αÑñ', location: 'αñ¬αÑçαñ▓αñ┐αñÖ, αñ╕αñ┐αñòαÑìαñòαñ┐αñ«' }
+    },
+    experiences: { meditation: 'αñºαÑìαñ»αñ╛αñ¿ αñ╢αñ┐αñ╡αñ┐αñ░', philosophy: 'αñ¼αÑîαñªαÑìαñº αñªαñ░αÑìαñ╢αñ¿', homestay: 'αñùαÑüαñ«αÑìαñ¼αñ╛ αñ╣αÑïαñ«αñ╕αÑìαñƒαÑç', crafts: 'αñ¬αñ╛αñ░αñ«αÑìαñ¬αñ░αñ┐αñò αñ╣αñ╕αÑìαññαñòαñ▓αñ╛' },
+    tourPackages: {
+      title: 'αñƒαÑéαñ░ αñ¬αÑìαñ»αñ╛αñòαÑçαñ£αñ╣αñ░αÑé',
+      subtitle: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñƒαÑìαñ░αÑçαñ▓αÑìαñ╕αñòαÑï αñ£αñ╛αñªαÑé αñ╣αñ╛αñ«αÑìαñ░αÑï αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ░ αñ╕αñ╛αñ╣αñ╕αñ┐αñò αñ»αñ╛αññαÑìαñ░αñ╛αñ╣αñ░αÑéαñòαÑï αñ╕αñ╛αñÑ αñ¬αññαÑìαññαñ╛ αñ▓αñùαñ╛αñëαñ¿αÑüαñ╣αÑïαñ╕αÑìαÑñ',
+      basic: {
+        title: 'αñåαñºαñ╛αñ░αñ¡αÑéαññ αñ¬αÑìαñ»αñ╛αñòαÑçαñ£',
+        duration: 'αÑ⌐ αñªαñ┐αñ¿ / αÑ¿ αñ░αñ╛αññ',
+        services: ['αñ¼αñ£αÑçαñƒ αñ╣αÑïαñƒαñ▓ αñ¼αñ╕αñ╛αñê', 'αñ╕αÑìαñÑαñ╛αñ¿αÑÇαñ» αñªαñ░αÑìαñ╢αñ¿αÑÇαñ» αñ╕αÑìαñÑαñ▓αñ╣αñ░αÑé (αñùαñ╛αñ¿αÑìαññαÑïαñò)', 'αñ╕αñ╛αñ¥αñ╛ αñ»αñ╛αññαñ╛αñ»αñ╛αññ', 'αñûαñ╛αñ¿αñ╛ αñ╕αñ«αñ╛αñ╡αÑçαñ╢ αñ¢αÑêαñ¿']
+      },
+      premium: {
+        title: 'αñ¬αÑìαñ░αÑÇαñ«αñ┐αñ»αñ« αñ¬αÑìαñ»αñ╛αñòαÑçαñ£',
+        duration: 'αÑ½ αñªαñ┐αñ¿ / αÑ¬ αñ░αñ╛αññ',
+        services: ['αÑ⌐-αññαñ╛αñ░αÑç αñ╣αÑïαñƒαñ▓ αñ¼αñ╕αñ╛αñê', 'αñùαñ╛αñ¿αÑìαññαÑïαñò + αññαÑìαñ╕αÑïαñ«αÑìαñùαÑï αñ▓αÑçαñò + αñ¼αñ╛αñ¼αñ╛ αñ«αñ¿αÑìαñªαñ┐αñ░', 'αñ¼αñ┐αñ╣αñ╛αñ¿αñòαÑï αñûαñ╛αñ£αñ╛ αñ░ αñ░αñ╛αññαÑÇαñòαÑï αñûαñ╛αñ¿αñ╛ αñ╕αñ«αñ╛αñ╡αÑçαñ╢', 'αñ¿αñ┐αñ£αÑÇ/αñ╕αñ╛αñ¥αñ╛ αñ»αñ╛αññαñ╛αñ»αñ╛αññ', 'αñùαñ╛αñçαñíαÑçαñí αñƒαÑüαñ░']
+      },
+      luxury: {
+        title: 'αñ▓αñòαÑìαñ£αñ░αÑÇ αñ¬αÑìαñ»αñ╛αñòαÑçαñ£',
+        duration: 'αÑ¡ αñªαñ┐αñ¿ / αÑ¼ αñ░αñ╛αññ',
+        services: ['αÑ½-αññαñ╛αñ░αÑç αñ╣αÑïαñƒαñ▓ / αñ░αñ┐αñ╕αÑëαñ░αÑìαñƒ αñ¼αñ╕αñ╛αñê', 'αñùαñ╛αñ¿αÑìαññαÑïαñò + αñëαññαÑìαññαñ░αÑÇ αñ╕αñ┐αñòαÑìαñòαñ┐αñ« (αñ▓αñ╛αñÜαÑüαñÖ, αñ»αÑüαñ«αñÑαñ╛αñÖ)', 'αñ╕αñ¼αÑê αñûαñ╛αñ¿αñ╛ αñ╕αñ«αñ╛αñ╡αÑçαñ╢', 'αñ¿αñ┐αñ£αÑÇ αñƒαÑìαñ»αñ╛αñòαÑìαñ╕αÑÇ αñ░ αñ╡αÑìαñ»αñòαÑìαññαñ┐αñùαññ αñùαñ╛αñçαñí', 'αñ¬αÑìαñ░αñ╛αñÑαñ«αñ┐αñòαññαñ╛ αñ¼αÑüαñòαñ┐αñéαñù αñ░ VIP αñàαñ¿αÑüαñ¡αñ╡']
+      },
+      safetySection: {
+        title: 'αñ╕αÑüαñ░αñòαÑìαñ╖αñ╛ αñ░ αñƒαÑìαñ░αÑìαñ»αñ╛αñòαñ┐αñÖ αñ¬αÑìαñ░αñúαñ╛αñ▓αÑÇ',
+        description: "αññαñ¬αñ╛αñêαñòαÑï αñ╕αÑüαñ░αñòαÑìαñ╖αñ╛ αñ╣αñ╛αñ«αÑìαñ░αÑï αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ¬αÑìαñ░αññαñ┐αñ¼αñªαÑìαñºαññαñ╛ αñ╣αÑïαÑñ αñ╣αñ╛αñ«αÑÇαñ▓αÑç αñ¬αÑìαñ░αññαÑìαñ»αÑçαñò αñ»αñ╛αññαÑìαñ░αÑÇαñòαÑï αÑ¿αÑ¬/αÑ¡ αñ╕αÑüαñ░αñòαÑìαñ╖αñ╛ αñ╕αÑüαñ¿αñ┐αñ╢αÑìαñÜαñ┐αññ αñùαñ░αÑìαñ¿ αñ¼αñ▓αñ┐αñ»αÑï αñíαñ┐αñ£αñ┐αñƒαñ▓ αñ¬αÑéαñ░αÑìαñ╡αñ╛αñºαñ╛αñ░ αñ¿αñ┐αñ░αÑìαñ«αñ╛αñú αñùαñ░αÑçαñòαñ╛ αñ¢αÑîαñéαÑñ",
+        features: {
+          gps: { title: 'αñ¬αÑìαñ░αññαÑìαñ»αñòαÑìαñ╖ GPS αñƒαÑìαñ░αÑìαñ»αñ╛αñòαñ┐αñÖ', desc: 'αñ╡αñ╛αñ╕αÑìαññαñ╡αñ┐αñò αñ╕αñ«αñ» αñ╕αÑìαñÑαñ╛αñ¿ αñ¿αñ┐αñùαñ░αñ╛αñ¿αÑÇαÑñ' },
+          sos: { title: 'αñåαñ¬αññαñòαñ╛αñ▓αÑÇαñ¿ SOS', desc: 'αññαÑüαñ░αÑüαñ¿αÑìαññ SOS αñ¬αÑìαñ░αññαñ┐αñòαÑìαñ░αñ┐αñ»αñ╛αÑñ' },
+          support: { title: 'αÑ¿αÑ¬/αÑ¡ αñ╕αñ«αñ░αÑìαñÑαñ¿', desc: 'αñ╕αñ«αñ░αÑìαñ¬αñ┐αññ αñ╕αñ╣αñ╛αñ»αññαñ╛ αñƒαÑïαñ▓αÑÇαÑñ' },
+          partners: { title: 'αñ¬αÑìαñ░αñ«αñ╛αñúαñ┐αññ αñ╕αñ╛αñ¥αÑçαñªαñ╛αñ░αñ╣αñ░αÑé', desc: 'αñ¬αÑéαñ░αÑìαñú αñ░αÑéαñ¬αñ«αñ╛ αñ£αñ╛αñüαñÜ αñùαñ░αñ┐αñÅαñòαñ╛ αñÜαñ╛αñ▓αñò αñ░ αñùαñ╛αñçαñíαñ╣αñ░αÑéαÑñ' }
+        }
+      }
+    },
+    footer: { description: 'αñ╕αñ┐αñòαÑìαñòαñ┐αñ«αñòαÑï αñåαñºαÑìαñ»αñ╛αññαÑìαñ«αñ┐αñò αñ╡αñ┐αñ░αñ╛αñ╕αññ αñ░ αñ¬αñ╡αñ┐αññαÑìαñ░ αñùαÑüαñ«αÑìαñ¼αñ╛αñ╣αñ░αÑé αñàαñ¿αÑìαñ╡αÑçαñ╖αñú αñùαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑìαÑñ', copyright: '┬⌐ αÑ¿αÑªαÑ¿αÑ½ αñ╕αñ┐αñòαÑìαñòαñ┐αñ« αñƒαÑìαñ░αÑçαñ▓αÑìαñ╕αÑñ αñ╕αñ¼αÑê αñàαñºαñ┐αñòαñ╛αñ░ αñ╕αÑüαñ░αñòαÑìαñ╖αñ┐αññαÑñ', ar: { viewInAr: 'AR αñ«αñ╛ αñ╣αÑçαñ░αÑìαñ¿αÑüαñ╣αÑïαñ╕αÑì' } }
+  }
+
+};
+
+const App: React.FC = () => {
+  const [currentLanguage, setCurrentLanguage] = useState<keyof typeof translations>('English');
+  const [activeSection, setActiveSection] = useState('home');
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isARModalOpen, setIsARModalOpen] = useState(false);
+  const [arModelId, setArModelId] = useState<string | null>(null);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('theme') as 'light' | 'dark') || 'light');
+  const [currentUser, setCurrentUser] = useState<{name: string, email: string} | null>(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [notification, setNotification] = useState<{message: string, type: 'success' | 'info'} | null>(null);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  const handleLogout = () => { localStorage.removeItem('user'); setCurrentUser(null); showNotification('Logged out successfully', 'info'); };
+  const showNotification = (message: string, type: 'success' | 'info' = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  const t = (translations[currentLanguage] as any) || translations.English;
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) element.scrollIntoView({ behavior: 'smooth' });
+    setActiveSection(sectionId);
+    setIsMobileMenuOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-orange-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors duration-300">
+      {notification && (
+        <div className={`fixed top-24 right-5 z-[100] px-6 py-3 rounded-xl shadow-2xl animate-fade-in-up flex items-center gap-3 ${notification.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-blue-500 text-white'}`}>
+          <Sparkles size={20} />
+          <p className="font-medium">{notification.message}</p>
+        </div>
+      )}
+
+      <Header 
+        currentLanguage={currentLanguage} setCurrentLanguage={setCurrentLanguage}
+        activeSection={activeSection} scrollToSection={scrollToSection}
+        isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
+        theme={theme} toggleTheme={toggleTheme}
+        translations={translations}
+        currentUser={currentUser} handleLogout={handleLogout}
+        setIsLoginOpen={setIsLoginOpen} setIsSignupOpen={() => {}}
+      />
+
+      <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-orange-100/50 to-orange-50/20 dark:from-slate-900/50 dark:to-slate-950/20 -z-10"></div>
+        <div className="container mx-auto px-6 py-20 text-center relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100 dark:bg-slate-800 text-orange-600 dark:text-orange-400 font-medium mb-8 animate-fade-in">
+            <Sparkles size={18} />
+            <span>{t.tagline}</span>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-yellow-600 to-orange-600 dark:from-orange-400 dark:via-yellow-400 dark:to-orange-400">{t.heroTitle}</h1>
+          <p className="text-xl text-gray-600 dark:text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed">{t.heroSubtitle}</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">{t.spiritualExperiences}</h2>
+            <p className="text-gray-600 dark:text-slate-400">{t.spiritualExperiencesSubtitle}</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {Object.entries(t.experiences).map(([key, value]) => (
+              <div key={key} className="p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-lg border border-orange-100 dark:border-slate-700 transition-all hover:-translate-y-2">
+                <div className="w-14 h-14 bg-orange-100 dark:bg-slate-700 flex items-center justify-center rounded-2xl mb-6 text-orange-600 dark:text-orange-400"><Heart size={28} /></div>
+                <h4 className="text-xl font-bold mb-3">{value as string}</h4>
+                <button className="text-orange-600 dark:text-orange-400 font-semibold flex items-center gap-2 hover:gap-3 transition-all">{t.bookExperience} <Star size={16} /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Packages t={t} />
+
+      <div className="fixed bottom-8 right-8 z-50">
+        <button onClick={() => setIsChatOpen(!isChatOpen)} className="group flex items-center gap-3 px-6 py-4 bg-orange-600 text-white rounded-2xl shadow-2xl transition-all hover:scale-105"><MessageCircle size={24} /><span className="font-semibold">{t.chatWithSaarthi}</span></button>
+      </div>
+
+      <Chatbot 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        currentLanguage={currentLanguage} 
+        theme={theme}
+      />
+      {isARModalOpen && (
+        <ARModal 
+          isOpen={isARModalOpen} 
+          onClose={() => setIsARModalOpen(false)} 
+          monasteryName={arModelId ? t.monasteries[arModelId]?.name : 'Monastery'} 
+          translations={t}
+        />
+      )}
+      {isAdminOpen && <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />}
+      <button onClick={() => setIsAdminOpen(true)} className="fixed bottom-8 left-8 opacity-20 hover:opacity-100 transition-opacity bg-slate-800 text-white p-3 rounded-full"><Shield size={20} /></button>
+
+      <footer className="py-12 bg-slate-900 text-slate-400 text-center">
+        <Mountain className="mx-auto mb-6 text-orange-500" size={40} />
+        <p className="max-w-xl mx-auto mb-8">{t.footer.description}</p>
+        <div className="pt-8 border-t border-slate-800"><p>{t.footer.copyright}</p></div>
+      </footer>
+    </div>
+  );
+};
+export default App;
+
+[SYSTEM_PROMPT]
+
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { connectDB } from './db.js';
+import Package from './models/Package.js';
+import Booking from './models/Booking.js';
+import HelpRequest from './models/HelpRequest.js';
+import User from './models/User.js';
+import bcrypt from 'bcryptjs';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Connect Database
+connectDB();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Initialize Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// System prompt for Gemini
+const SYSTEM_PROMPT = `Identity: Saarthi (Sikkim AI Guide).
+Logic: High-speed, data-first response. 
+
+INSTRUCTIONS:
+- Bypass standard AI greetings. Deliver facts immediately.
+- Priority: Local food (≡ƒì▓), Permits (ΓÜá∩╕Å), and Monasteries (≡ƒôì).
+- If server load is detected (503), respond in short, impactful fragments.
+- Formatting: Use Markdown bolding for places and bullet points for tours.
+
+MANDATORY DATA: 
+- Always mention RAP/PAP for Tsomgo/Nathu La.
+- Direct non-Sikkim queries back to travel (e.g., "I'm focused on the Himalayas, let's talk about Sikkim travel...").
+
+CRITICAL INSTRUCTIONS FOR UI:
+1. If the user asks about booking, tours, or travel packages, you MUST append EXACTLY "[SHOW_PACKAGES]" at the end.
+2. If the user asks for emergency help, police, or rescue, you MUST append EXACTLY "[SHOW_EMERGENCY]" at the end.`;
+
+// Routes
+// Gemini Chat Endpoint
+app.post('/api/chat', async (req, res) => {
+  console.log(`[CHAT REQUEST] ${new Date().toISOString()} - Message: ${req.body.message?.substring(0, 50)}...`);
+  try {
+    const { message, language } = req.body;

@@ -24,16 +24,8 @@ interface PackageProps {
 }
 
 const Packages: React.FC<PackageProps> = ({ t }) => {
-  const tp = t?.tourPackages;
+  const tp = t.tourPackages;
   const [specialPackages, setSpecialPackages] = useState<any[]>([]);
-
-  if (!tp || !tp.basic || !tp.premium || !tp.luxury) {
-    return (
-      <div className="py-24 text-center">
-        <p className="text-gray-400 italic">Travel packages loading...</p>
-      </div>
-    );
-  }
 
   useEffect(() => {
     // Load special packages from storage
@@ -57,24 +49,23 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
   const packages = [
     {
       title: tp.basic.title,
-      price: "₹7,999",
+      price: '₹5,999',
       duration: tp.basic.duration,
       popular: false,
       services: [
         { icon: <Hotel className="h-4 w-4" />, text: tp.basic.services[0] },
         { icon: <Map className="h-4 w-4" />, text: tp.basic.services[1] },
         { icon: <Car className="h-4 w-4" />, text: tp.basic.services[2] },
-        { icon: <Utensils className="h-4 w-4 text-red-400" />, text: tp.basic.services[3] }
+        { icon: <Utensils className="h-4 w-4" />, text: tp.basic.services[3] }
       ],
       safety: [
-         t.tourPackages.basic.safety?.[0] || "24/7 customer support helpline",
-         t.tourPackages.basic.safety?.[1] || "Basic travel insurance",
-         t.tourPackages.basic.safety?.[2] || "Emergency contact access"
+        tp.safetySection.features.gps.title,
+        tp.safetySection.features.support.title
       ]
     },
     {
       title: tp.premium.title,
-      price: "₹14,999",
+      price: '₹12,499',
       duration: tp.premium.duration,
       popular: true,
       services: [
@@ -82,18 +73,17 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
         { icon: <Map className="h-4 w-4" />, text: tp.premium.services[1] },
         { icon: <Utensils className="h-4 w-4" />, text: tp.premium.services[2] },
         { icon: <Car className="h-4 w-4" />, text: tp.premium.services[3] },
-        { icon: <MapPin className="h-4 w-4" />, text: tp.premium.services[4] }
+        { icon: <Navigation className="h-4 w-4" />, text: tp.premium.services[4] }
       ],
       safety: [
-        "Live location tracking",
-        "Verified drivers & guides",
-        "Emergency SOS button",
-        "Travel insurance included"
+        tp.safetySection.features.gps.title,
+        tp.safetySection.features.sos.title,
+        tp.safetySection.features.support.title
       ]
     },
     {
       title: tp.luxury.title,
-      price: "₹29,999",
+      price: '₹24,999',
       duration: tp.luxury.duration,
       popular: false,
       services: [
@@ -101,42 +91,58 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
         { icon: <Map className="h-4 w-4" />, text: tp.luxury.services[1] },
         { icon: <Utensils className="h-4 w-4" />, text: tp.luxury.services[2] },
         { icon: <Car className="h-4 w-4" />, text: tp.luxury.services[3] },
-        { icon: <Star className="h-4 w-4" />, text: tp.luxury.services[4] }
+        { icon: <Navigation className="h-4 w-4" />, text: tp.luxury.services[4] }
       ],
       safety: [
-        "Real-time GPS location tracking",
-        "Dedicated travel manager",
-        "SOS emergency assistance",
-        "Advanced travel insurance",
-        "Medical support on call"
+        tp.safetySection.features.gps.title,
+        tp.safetySection.features.sos.title,
+        tp.safetySection.features.support.title,
+        tp.safetySection.features.partners.title
       ]
     }
   ];
 
-  // Safety Section Features
   const safetyFeatures = [
-    { icon: <Navigation className="h-5 w-5" />, title: tp.safetySection.features.gps.title, desc: tp.safetySection.features.gps.desc },
-    { icon: <AlertCircle className="h-5 w-5" />, title: tp.safetySection.features.sos.title, desc: tp.safetySection.features.sos.desc },
-    { icon: <Headphones className="h-5 w-5" />, title: tp.safetySection.features.support.title, desc: tp.safetySection.features.support.desc },
-    { icon: <Smartphone className="h-5 w-5" />, title: tp.safetySection.features.partners.title, desc: tp.safetySection.features.partners.desc },
+    { 
+      icon: <Navigation className="h-6 w-6" />, 
+      title: tp.safetySection.features.gps.title, 
+      desc: tp.safetySection.features.gps.desc 
+    },
+    { 
+      icon: <AlertCircle className="h-6 w-6" />, 
+      title: tp.safetySection.features.sos.title, 
+      desc: tp.safetySection.features.sos.desc 
+    },
+    { 
+      icon: <Headphones className="h-6 w-6" />, 
+      title: tp.safetySection.features.support.title, 
+      desc: tp.safetySection.features.support.desc 
+    },
+    { 
+      icon: <Smartphone className="h-6 w-6" />, 
+      title: tp.safetySection.features.partners.title, 
+      desc: tp.safetySection.features.partners.desc 
+    }
   ];
 
   return (
-    <div className="bg-gray-50 py-24" id="packages">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="packages" className="py-24 bg-white relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-gray-50 to-white"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-sm font-bold text-red-600 tracking-widest uppercase mb-2">Exclusive Deals</h2>
-          <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">{tp.title}</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">{tp.subtitle}</p>
+          <h2 className="text-4xl md:text-5xl font-black mb-6 text-gray-900">{tp.title}</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto font-medium">
+            {tp.subtitle}
+          </p>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+        <div className="grid md:grid-cols-3 gap-8 mb-24">
           {packages.map((pkg, i) => (
             <div 
               key={i} 
-              className={`relative bg-white rounded-3xl overflow-hidden transition-all duration-300 transform hover:-translate-y-4 shadow-xl ${
-                pkg.popular ? 'ring-4 ring-red-600 shadow-2xl scale-105 z-10' : 'border border-gray-100'
+              className={`relative bg-white rounded-[3rem] overflow-hidden transition-all duration-300 transform hover:-translate-y-4 shadow-xl border-4 ${
+                pkg.popular ? 'border-red-600 shadow-2xl scale-105 z-10' : 'border-gray-100'
               }`}
             >
               {pkg.popular && (
