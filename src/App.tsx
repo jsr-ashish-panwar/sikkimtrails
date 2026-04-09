@@ -173,7 +173,7 @@ const App: React.FC = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const t = translations[currentLanguage] as any;
+  const t = (translations[currentLanguage] as any) || translations.English;
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) element.scrollIntoView({ behavior: 'smooth' });
@@ -195,6 +195,7 @@ const App: React.FC = () => {
         activeSection={activeSection} scrollToSection={scrollToSection}
         isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen}
         theme={theme} toggleTheme={toggleTheme}
+        translations={translations}
         currentUser={currentUser} handleLogout={handleLogout}
         setIsLoginOpen={setIsLoginOpen} setIsSignupOpen={() => {}}
       />
@@ -261,8 +262,20 @@ const App: React.FC = () => {
         <button onClick={() => setIsChatOpen(!isChatOpen)} className="group flex items-center gap-3 px-6 py-4 bg-orange-600 text-white rounded-2xl shadow-2xl transition-all hover:scale-105"><MessageCircle size={24} /><span className="font-semibold">{t.chatWithSaarthi}</span></button>
       </div>
 
-      <Chatbot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} currentLanguage={currentLanguage} showNotification={showNotification} />
-      {isARModalOpen && <ARModal isOpen={isARModalOpen} onClose={() => setIsARModalOpen(false)} modelId={arModelId} />}
+      <Chatbot 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        currentLanguage={currentLanguage} 
+        theme={theme}
+      />
+      {isARModalOpen && (
+        <ARModal 
+          isOpen={isARModalOpen} 
+          onClose={() => setIsARModalOpen(false)} 
+          monasteryName={arModelId ? t.monasteries[arModelId]?.name : 'Monastery'} 
+          translations={t}
+        />
+      )}
       {isAdminOpen && <AdminPanel isOpen={isAdminOpen} onClose={() => setIsAdminOpen(false)} />}
       <button onClick={() => setIsAdminOpen(true)} className="fixed bottom-8 left-8 opacity-20 hover:opacity-100 transition-opacity bg-slate-800 text-white p-3 rounded-full"><Shield size={20} /></button>
 
