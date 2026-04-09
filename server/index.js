@@ -43,47 +43,53 @@ CRITICAL INSTRUCTIONS FOR UI:
 // Routes
 // Gemini Chat Endpoint
 app.post('/api/chat', async (req, res) => {
+  console.log(`[CHAT REQUEST] ${new Date().toISOString()} - Message: ${req.body.message?.substring(0, 50)}...`);
   try {
     const { message, language } = req.body;
     
-    // Explicitly target the stable 'v1' and '1.5-flash' with systemInstruction
+    // Using v1beta as systemInstruction is a beta feature. 
+    // gemini-2.5-flash is confirmed to work with this API key.
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       systemInstruction: SYSTEM_PROMPT
     }, { 
-      apiVersion: "v1" 
+      apiVersion: "v1beta" 
     });
     
-    // Just pass the user message natively since systemInstruction handles rules
     const userContext = `User Language: ${language || 'English'}\nUser: ${message}`;
     const result = await model.generateContent(userContext);
     const responseText = result.response.text();
     
     res.json({ reply: responseText });
   } catch (error) {
-    console.error('Gemini Error:', error);
+    console.error('Gemini Error Details:', error);
     
     const msgLower = req.body.message?.toLowerCase() || "";
     let fallbackText = "";
 
-    // 503 or 429 means Google is overloaded or Quota exceeded. Give a high-quality fallback!
-    if (error.message && (error.message.includes('503') || error.message.includes('429'))) {
+    // Check for API Key or Demand issues
+    const isApiError = error.message?.includes('API_KEY_INVALID') || error.message?.includes('API Key not found');
+    const isOverload = error.message?.includes('503') || error.message?.includes('429');
+
+    if (isApiError || isOverload) {
       if (msgLower.includes('food') || msgLower.includes('dish')) {
-         fallbackText = "Namaste! While my main AI brain is cooling down from high demand, I can definitely tell you about our food!\n\nHere are some famous local dishes in Sikkim you must try:\n• **Momos:** Steamed or fried dumplings with delicious fillings.\n• **Thukpa:** A hearty traditional noodle soup perfect for the chilly weather.\n• **Phagshapa:** A flavorful pork dish cooked with radish and chili.\n\nEnjoy your culinary journey!";
+         fallbackText = "🍲 **Local Sikkim Cuisine Guide**:\n\n• **Momos**: A staple street food—steamed or fried dumplings.\n• **Thukpa**: Noodle soup with vegetables/meat, perfect for Gangtok's weather.\n• **Phagshapa**: Pork fat stewed with radish and dried chilies.\n\nEnjoy these local delicacies!";
       } else if (msgLower.includes('package') || msgLower.includes('tour')) {
-         fallbackText = "Namaste! My AI connection is slightly congested, but I am still here to help you plan your journey!\n\nHere are some of our best tour packages for exploring Sikkim: [SHOW_PACKAGES]";
-      } else if (msgLower.includes('monaster') || msgLower.includes('place')) {
-         fallbackText = "While my AI brain handles high demand, I can tell you that **Rumtek Monastery** and **Enchey Monastery** are absolute must-visits when in Gangtok! Do you need help with transport to these locations?";
+         fallbackText = "🏔️ **Explore Sikkim Tours**:\n\nI can help you find the best journey! Check out our current available packages here: [SHOW_PACKAGES]";
+      } else if (msgLower.includes('monaster') || msgLower.includes('rumtek') || msgLower.includes('enchey')) {
+         fallbackText = "📍 **Monastery Guide**:\n\n• **Rumtek Monastery**: The largest in Sikkim, seat of the Karmapa.\n• **Enchey Monastery**: Built on a site blessed by Lama Drupthob Karpo.\n\nDon't forget that for restricted areas like **Tsomgo Lake** or **Nathu La**, you will need a **RAP/PAP** (Permit) ready before travel!";
       } else if (msgLower.includes('emergency') || msgLower.includes('help')) {
-         fallbackText = "I see you need help. Here is the direct emergency line for the tourist police: [SHOW_EMERGENCY]";
+         fallbackText = "⚠️ I see you need assistance. Please stay calm. Here is the direct line for the **Tourist Police**: [SHOW_EMERGENCY]";
       } else {
-         fallbackText = "Namaste! As your local Saarthi guide, I'd love to help, but currently the AI system is experiencing high demand (Error 503). However, feel free to ask me specifically about **local food**, **tour packages**, **monasteries**, or **emergency assistance** and I will consult my local backup knowledge for you!";
+         if (isApiError) {
+           fallbackText = "Namaste! I am Saarthi. It looks like my AI key is currently invalid. However, I can still assist you with information regarding **local food**, **tour packages**, **monasteries**, or **emergency help**! What would you like to know?";
+         } else {
+           fallbackText = "Namaste! My AI connection is currently under high demand. Please try again in a few moments, or ask me about **food**, **monasteries**, or **packages** for a quick local answer!";
+         }
       }
       res.json({ reply: fallbackText });
     } else {
-      // Hardware/Network error or Invalid Key (400)
-      const errorMessage = error.message || 'Unknown error occurred while contacting AI.';
-      res.json({ reply: `I encountered an issue connecting to my AI brain. Detail: ${errorMessage}` });
+      res.json({ reply: `I encountered an issue connecting to my AI brain. Detail: ${error.message || 'Unknown Error'}` });
     }
   }
 });
