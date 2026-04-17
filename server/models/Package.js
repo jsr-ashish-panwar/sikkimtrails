@@ -6,7 +6,8 @@ const packageSchema = new mongoose.Schema({
   duration: { type: String, required: true },
   services: [{ type: String }],
   safety: [{ type: String }],
-  popular: { type: Boolean, default: false }
+  popular: { type: Boolean, default: false },
+  offer: { type: String, default: '' }
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

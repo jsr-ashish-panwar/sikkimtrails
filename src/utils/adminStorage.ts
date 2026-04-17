@@ -27,6 +27,27 @@ export interface SpecialPackage {
   services: string[];
   safety: string[];
   popular: boolean;
+  offer?: string;
+}
+
+export interface Experience {
+  id?: string;
+  name: string;
+  description: string;
+  price: string;
+  duration: string;
+  image: string;
+  rating?: number;
+}
+
+export interface Itinerary {
+  id?: string;
+  startingPoint: string;
+  destination: string;
+  duration: string;
+  spiritualFocus: string;
+  userLanguage: string;
+  createdAt?: string;
 }
 
 const API_BASE = '/api';
@@ -73,5 +94,31 @@ export const adminStorage = {
   },
   deletePackage: async (id: string): Promise<void> => {
     await axios.delete(`${API_BASE}/packages/${id}`);
+  },
+
+  // Experiences
+  getExperiences: async (): Promise<Experience[]> => {
+    const res = await axios.get(`${API_BASE}/experiences`);
+    return res.data;
+  },
+  saveExperience: async (exp: Omit<Experience, 'id'>): Promise<Experience> => {
+    const res = await axios.post(`${API_BASE}/experiences`, exp);
+    return res.data;
+  },
+  deleteExperience: async (id: string): Promise<void> => {
+    await axios.delete(`${API_BASE}/experiences/${id}`);
+  },
+
+  // Itineraries
+  getItineraries: async (): Promise<Itinerary[]> => {
+    const res = await axios.get(`${API_BASE}/itineraries`);
+    return res.data;
+  },
+  saveItinerary: async (itinerary: Omit<Itinerary, 'id' | 'createdAt'>): Promise<Itinerary> => {
+    const res = await axios.post(`${API_BASE}/itineraries`, itinerary);
+    return res.data;
+  },
+  deleteItinerary: async (id: string): Promise<void> => {
+    await axios.delete(`${API_BASE}/itineraries/${id}`);
   }
 };

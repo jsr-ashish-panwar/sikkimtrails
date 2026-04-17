@@ -47,7 +47,18 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
     fetchPackages();
   }, []);
 
-  const handlePackageBooking = (packageName: string) => {
+  const handlePackageBooking = async (packageName: string) => {
+    try {
+      // Save inquiry to admin panel so admin sees the lead
+      await adminStorage.saveHelpRequest({
+        name: 'Package Lead',
+        subject: `Package Inquiry: ${packageName}`,
+        message: `A user expressed interest in booking the ${packageName}. Redirected to WhatsApp.`
+      });
+    } catch (error) {
+       console.error("Failed to log package lead", error);
+    }
+    
     const message = `Namaste! I am interested in the ${packageName} from Sikkim Trails. Please provide more details.`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/918650882398?text=${encodedMessage}`, '_blank');
@@ -133,13 +144,13 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
   ];
 
   return (
-    <div id="packages" className="py-24 bg-white relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-gray-50 to-white"></div>
+    <div id="packages" className="py-24 bg-white dark:bg-slate-900 relative overflow-hidden transition-colors duration-500">
+      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-gray-50 to-white dark:from-slate-950 dark:to-slate-900"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black mb-6 text-gray-900">{tp.title}</h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto font-medium">
+          <h2 className="text-4xl md:text-5xl font-black mb-6 text-gray-900 dark:text-white">{tp.title}</h2>
+          <p className="text-xl text-gray-600 dark:text-slate-400 max-w-2xl mx-auto font-medium">
             {tp.subtitle}
           </p>
         </div>
@@ -148,8 +159,8 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
           {packages.map((pkg, i) => (
             <div 
               key={i} 
-              className={`relative bg-white rounded-[3rem] overflow-hidden transition-all duration-300 transform hover:-translate-y-4 shadow-xl border-4 ${
-                pkg.popular ? 'border-red-600 shadow-2xl scale-105 z-10' : 'border-gray-100'
+              className={`relative bg-white dark:bg-slate-800 rounded-[3rem] overflow-hidden transition-all duration-300 transform hover:-translate-y-4 shadow-xl border-4 ${
+                pkg.popular ? 'border-red-600 shadow-2xl scale-105 z-10' : 'border-gray-100 dark:border-slate-700'
               }`}
             >
               {pkg.popular && (
@@ -159,22 +170,22 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
               )}
               
               <div className="p-8">
-                <h3 className="text-lg font-black text-gray-900 mb-1">{pkg.title}</h3>
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-1">{pkg.title}</h3>
                 <div className="flex items-baseline mb-4">
-                  <span className="text-4xl font-black text-red-600">{pkg.price}</span>
-                  <span className="text-gray-400 text-sm ml-2">/ person</span>
+                  <span className="text-4xl font-black text-red-600 dark:text-red-400">{pkg.price}</span>
+                  <span className="text-gray-400 dark:text-slate-500 text-sm ml-2">/ person</span>
                 </div>
-                <div className="flex items-center text-sm text-gray-500 mb-8 bg-gray-50 p-2 rounded-xl">
-                  <Clock className="h-4 w-4 mr-2 text-red-600" />
+                <div className="flex items-center text-sm text-gray-500 dark:text-slate-400 mb-8 bg-gray-50 dark:bg-slate-900 p-2 rounded-xl">
+                  <Clock className="h-4 w-4 mr-2 text-red-600 dark:text-red-400" />
                   {pkg.duration}
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Services Included</p>
+                  <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Services Included</p>
                   {pkg.services?.map((svc, idx) => (
                     svc.text && (
-                      <div key={idx} className="flex items-center text-sm text-gray-700">
-                        <div className="bg-red-50 p-1.5 rounded-lg mr-3 text-red-600">
+                      <div key={idx} className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                        <div className="bg-red-50 dark:bg-red-900/20 p-1.5 rounded-lg mr-3 text-red-600 dark:text-red-400">
                           {svc.icon}
                         </div>
                         <span className="line-clamp-1">{svc.text}</span>
@@ -184,10 +195,10 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
                 </div>
 
                 <div className="space-y-4 mb-8">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Safety Features</p>
+                  <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Safety Features</p>
                   {pkg.safety?.map((safe, idx) => (
                     safe && (
-                      <div key={idx} className="flex items-center text-sm text-gray-600">
+                      <div key={idx} className="flex items-center text-sm text-gray-600 dark:text-slate-400">
                         <ShieldCheck className="h-4 w-4 mr-3 text-green-500 shrink-0" />
                         <span className="line-clamp-1">{safe}</span>
                       </div>
@@ -197,10 +208,10 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
 
                 <button 
                   onClick={() => handlePackageBooking(pkg.title || '')}
-                  className={`w-full py-4 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                  className={`w-full py-4 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${
                     pkg.popular 
-                      ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-200' 
-                      : 'bg-gray-900 text-white hover:bg-black shadow-lg shadow-gray-200'
+                      ? 'bg-red-600 text-white hover:bg-red-700 shadow-red-200 dark:shadow-red-900/20' 
+                      : 'bg-gray-900 dark:bg-white text-white dark:text-slate-900 hover:bg-black dark:hover:bg-gray-200 shadow-gray-200 dark:shadow-none'
                   }`}
                 >
                   Book Now
@@ -210,46 +221,54 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
             </div>
           ))}
 
-          {/* Render Special Packages */}
+          {/* Render Special Packages from Admin */}
           {specialPackages.map((pkg) => (
             <div 
               key={`special-${pkg.id}`} 
-              className={`relative bg-white rounded-3xl overflow-hidden transition-all duration-300 transform hover:-translate-y-4 shadow-xl border-4 ${
-                pkg.popular ? 'border-red-600 shadow-2xl scale-105 z-10' : 'border-gray-100'
+              className={`relative bg-white dark:bg-slate-800 rounded-[3rem] overflow-hidden transition-all duration-300 transform hover:-translate-y-4 shadow-xl border-4 ${
+                pkg.popular ? 'border-red-600 shadow-2xl scale-105 z-10' : 'border-gray-100 dark:border-slate-700'
               }`}
             >
-              <div className="absolute top-0 right-0 bg-red-600 text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-2xl uppercase tracking-widest">
-                Special Offer
-              </div>
-              
-              <div className="p-8">
-                <h3 className="text-lg font-black text-gray-900 mb-1">{pkg.title}</h3>
-                <div className="flex items-baseline mb-4">
-                  <span className="text-4xl font-black text-red-600">{pkg.price}</span>
-                  <span className="text-gray-400 text-sm ml-2">/ person</span>
+              {pkg.popular && (
+                <div className="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-black px-4 py-1.5 rounded-br-2xl uppercase tracking-widest z-20">
+                  Most Popular
                 </div>
-                <div className="flex items-center text-sm text-gray-500 mb-8 bg-gray-50 p-2 rounded-xl">
-                  <Clock className="h-4 w-4 mr-2 text-red-600" />
+              )}
+
+              {pkg.offer && (
+                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-widest z-20 flex items-center gap-1">
+                  <Star className="w-3 h-3 fill-current" /> {pkg.offer}
+                </div>
+              )}
+              
+              <div className="p-8 pt-10">
+                <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2 leading-tight">{pkg.title}</h3>
+                <div className="flex items-baseline mb-4">
+                  <span className="text-4xl font-black text-red-600 dark:text-red-400">{pkg.price}</span>
+                  <span className="text-gray-400 dark:text-slate-500 text-xs ml-2 uppercase font-bold tracking-widest">/ person</span>
+                </div>
+                <div className="flex items-center text-sm text-gray-500 dark:text-slate-400 mb-8 bg-gray-50 dark:bg-slate-900 p-2 rounded-xl transition-colors font-bold">
+                  <Clock className="h-4 w-4 mr-2 text-red-600 dark:text-red-400" />
                   {pkg.duration}
                 </div>
 
-                <div className="space-y-4 mb-8">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Services Included</p>
+                <div className="space-y-4 mb-10">
+                  <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em]">Services Included</p>
                   {pkg.services?.map((svc: string, idx: number) => (
-                    <div key={idx} className="flex items-center text-sm text-gray-700">
-                      <div className="bg-red-50 p-1.5 rounded-lg mr-3 text-red-600">
+                    <div key={idx} className="flex items-center text-sm text-gray-700 dark:text-gray-300">
+                      <div className="bg-red-50 dark:bg-red-900/20 p-1.5 rounded-lg mr-3 text-red-600 dark:text-red-400">
                         <Check className="h-4 w-4" />
                       </div>
-                      <span className="line-clamp-1">{svc}</span>
+                      <span className="line-clamp-1 font-medium">{svc}</span>
                     </div>
                   ))}
                 </div>
 
                 <button 
                   onClick={() => handlePackageBooking(pkg.title)}
-                  className={`w-full py-4 rounded-2xl font-bold transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white hover:opacity-90 shadow-lg shadow-red-200`}
+                  className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white hover:shadow-xl hover:-translate-y-1 active:scale-95 shadow-lg shadow-red-200 dark:shadow-red-900/20`}
                 >
-                  Book Now
+                  Confirm Booking
                   <MessageCircle className="h-5 w-5" />
                 </button>
               </div>
@@ -258,29 +277,29 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
         </div>
 
         {/* Safety & Tracking System Section */}
-        <div className="bg-white rounded-[40px] shadow-2xl p-8 md:p-16 border border-gray-100 overflow-hidden relative">
-          <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-red-50 rounded-full blur-3xl opacity-50"></div>
-          <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-orange-50 rounded-full blur-3xl opacity-50"></div>
+        <div className="bg-white dark:bg-slate-800 rounded-[40px] shadow-2xl p-8 md:p-16 border border-gray-100 dark:border-slate-700 overflow-hidden relative">
+          <div className="absolute top-[-20%] right-[-10%] w-64 h-64 bg-red-50 dark:bg-red-950/20 rounded-full blur-3xl opacity-50"></div>
+          <div className="absolute bottom-[-10%] left-[-5%] w-48 h-48 bg-orange-50 dark:bg-orange-950/20 rounded-full blur-3xl opacity-50"></div>
           
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
             <div className="md:w-1/2">
-              <div className="bg-red-100 text-red-600 p-3 rounded-2xl inline-block mb-6">
+              <div className="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-2xl inline-block mb-6">
                 <Shield className="h-8 w-8" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-6 leading-tight">{tp.safetySection.title}</h2>
-              <p className="text-gray-600 mb-8 max-w-lg">
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-6 leading-tight">{tp.safetySection.title}</h2>
+              <p className="text-gray-600 dark:text-slate-400 mb-8 max-w-lg">
                 {tp.safetySection.description}
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {safetyFeatures.map((feature, i) => (
                   <div key={i} className="flex items-start">
-                    <div className="bg-red-50 p-2 rounded-xl mr-4 text-red-600">
+                    <div className="bg-red-50 dark:bg-red-900/30 transition-colors p-2 rounded-xl mr-4 text-red-600 dark:text-red-400">
                       {feature.icon}
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900 text-sm">{feature.title}</h4>
-                      <p className="text-[10px] text-gray-500">{feature.desc}</p>
+                      <h4 className="font-bold text-gray-900 dark:text-white text-sm">{feature.title}</h4>
+                      <p className="text-[10px] text-gray-500 dark:text-slate-400">{feature.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -288,7 +307,7 @@ const Packages: React.FC<PackageProps> = ({ t }) => {
             </div>
             
             <div className="md:w-1/2 relative">
-               <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
+               <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-8 border-white dark:border-slate-700 transition-colors">
                   <img 
                     src="https://images.unsplash.com/photo-1527352723447-44bc8f761ca7?auto=format&fit=crop&q=80&w=800" 
                     alt="Safety Tracking" 

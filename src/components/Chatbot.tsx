@@ -69,7 +69,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
              <div className={`whitespace-pre-wrap text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{reply}</div>
              
              {showPackages && (
-                <div className="mt-4 p-3 bg-green-50/50 rounded-xl border border-green-100">
+                <div className={`mt-4 p-3 rounded-xl border transition-colors ${theme === 'dark' ? 'bg-slate-800/50 border-slate-700' : 'bg-green-50/50 border-green-100'}`}>
                   <div className="flex items-center text-green-700 font-bold mb-2">
                     <Wallet className="h-4 w-4 mr-2" />
                     <span className="text-xs uppercase">Available Tour Packages</span>
@@ -77,10 +77,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
                   <div className="space-y-2 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
                     {adminStorage.getPackages().length > 0 ? (
                       adminStorage.getPackages().map((p, i) => (
-                        <div key={i} className="bg-white p-2.5 rounded-lg border border-green-100 flex justify-between items-center shadow-sm">
+                        <div key={i} className={`p-2.5 rounded-lg border flex justify-between items-center shadow-sm transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-green-100'}`}>
                           <div>
-                            <span className="block text-xs font-bold text-gray-800">{p.title}</span>
-                            <span className="text-[10px] text-gray-500">{p.duration}</span>
+                            <span className={`block text-xs font-bold ${theme === 'dark' ? 'text-slate-200' : 'text-gray-800'}`}>{p.title}</span>
+                            <span className={`text-[10px] ${theme === 'dark' ? 'text-slate-500' : 'text-gray-500'}`}>{p.duration}</span>
                           </div>
                           <div className="text-right">
                             <span className="block text-xs font-bold text-green-700">{p.price}</span>
@@ -96,8 +96,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
              )}
 
              {showEmergency && (
-                <div className="mt-4 p-4 bg-red-50 rounded-xl border border-red-100">
-                  <div className="flex items-center text-red-700 font-bold mb-3">
+                <div className={`mt-4 p-4 rounded-xl border transition-colors ${theme === 'dark' ? 'bg-red-950/20 border-red-900/40' : 'bg-red-50 border-red-100'}`}>
+                  <div className={`flex items-center font-bold mb-3 ${theme === 'dark' ? 'text-red-400' : 'text-red-700'}`}>
                     <ShieldAlert className="h-5 w-5 mr-2" />
                     <span>EMERGENCY HELPLINE</span>
                   </div>

@@ -5,6 +5,8 @@ import { connectDB } from './db.js';
 import Package from './models/Package.js';
 import Booking from './models/Booking.js';
 import HelpRequest from './models/HelpRequest.js';
+import Experience from './models/Experience.js';
+import Itinerary from './models/Itinerary.js';
 import User from './models/User.js';
 import bcrypt from 'bcryptjs';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -206,6 +208,64 @@ app.delete('/api/help-requests/:id', async (req, res) => {
   try {
     await HelpRequest.findByIdAndDelete(req.params.id);
     res.json({ message: 'Help request deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Experiences CRUD
+app.get('/api/experiences', async (req, res) => {
+  try {
+    const experiences = await Experience.find();
+    res.json(experiences);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/experiences', async (req, res) => {
+  try {
+    const newExperience = new Experience(req.body);
+    const savedExperience = await newExperience.save();
+    res.status(201).json(savedExperience);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/experiences/:id', async (req, res) => {
+  try {
+    await Experience.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Experience deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Itineraries CRUD
+app.get('/api/itineraries', async (req, res) => {
+  try {
+    const itineraries = await Itinerary.find();
+    res.json(itineraries);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/itineraries', async (req, res) => {
+  try {
+    const newItinerary = new Itinerary(req.body);
+    const savedItinerary = await newItinerary.save();
+    res.status(201).json(savedItinerary);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.delete('/api/itineraries/:id', async (req, res) => {
+  try {
+    await Itinerary.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Itinerary deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

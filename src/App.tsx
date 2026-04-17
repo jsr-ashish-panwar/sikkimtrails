@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { 
   Mountain, MapPin, MessageCircle, X, Star, Camera, Phone, Mail, 
   Clock, Heart, Award, Menu, Shield, Users, 
-  Sparkles, BookOpen, Music 
+  Sparkles, BookOpen, Music, Sun, Moon, ChevronRight
 } from 'lucide-react';
 import Chatbot from './components/Chatbot';
 import ARModal from './components/ARModal';
 import Packages from './components/Packages';
+import AdminPanel from './components/Admin/AdminPanel';
 import { adminStorage } from './utils/adminStorage';
 
 const translations = {
@@ -27,17 +28,29 @@ const translations = {
       about: 'About',
       contact: 'Contact',
     },
-    planJourney: 'Plan Your Spiritual Voyage',
-    planJourneySubtitle: 'Customized itineraries based on your spiritual interests and time',
+    planJourney: 'Plan Your Spiritual Journey',
+    planJourneySubtitle: 'Let Saarthi guide you through a personalized monastery pilgrimage across Sikkim',
     startingPoint: 'Starting Point',
     primaryMonastery: 'Primary Monastery',
     duration: 'Duration',
     spiritualFocus: 'Spiritual Focus',
-    createJourney: 'Create My Journey',
+    createJourney: 'Create Sacred Journey with Saarthi',
+    placeholders: {
+      startingPoint: 'Select starting point',
+      primaryMonastery: 'Select primary monastery',
+      duration: 'Select duration',
+      spiritualFocus: 'Select spiritual focus'
+    },
+    options: {
+      startingPoint: ['Gangtok', 'Pelling', 'Yuksom', 'Ravangla'],
+      primaryMonastery: ['Rumtek Monastery', 'Namchi Monastery', 'Tashiding Monastery', 'Enchey Monastery', 'Dubdi Monastery', 'Ralang Monastery'],
+      duration: ['3–5 Days', '1 Week', '1–2 Weeks'],
+      spiritualFocus: ['Meditation', 'Buddhist Philosophy', 'Cultural Immersion', 'Sacred Pilgrimage']
+    },
     monasteryShowcase: 'Sacred Monasteries',
     monasteryShowcaseSubtitle: 'Explore ancient Buddhist monasteries nestled in the Himalayan landscape',
     exploreMonastery: 'Explore Details',
-    spiritualExperiences: 'Spiritual Experiences',
+    spiritualExperiences: 'Spiritual Experiences & Local Culture',
     spiritualExperiencesSubtitle: 'Immerse yourself in authentic Buddhist practices and Sikkimese culture',
     bookExperience: 'Book Experience',
     buddhist: 'Buddhist Traditions of Sikkim',
@@ -83,8 +96,8 @@ const translations = {
       selectTime: 'Select Time',
       participants: 'Number of Participants',
       specialRequests: 'Special Requests',
-      totalCost: 'Estimated Total',
-      bookNow: 'Confirm Booking'
+      totalCost: 'Total Cost',
+      bookNow: 'Book Now'
     },
     monasteryModal: {
       history: 'History & Significance',
@@ -229,16 +242,28 @@ const translations = {
       contact: 'संपर्क',
     },
     planJourney: 'अपनी आध्यात्मिक यात्रा की योजना बनाएं',
-    planJourneySubtitle: 'आपके हितों और समय के आधार पर अनुकूलित यात्रा कार्यक्रम',
+    planJourneySubtitle: 'सारथी को सिक्किम में एक व्यक्तिगत मठ तीर्थयात्रा के माध्यम से आपका मार्गदर्शन करने दें',
     startingPoint: 'प्रस्थान बिंदु',
     primaryMonastery: 'मुख्य मठ',
     duration: 'अवधि',
     spiritualFocus: 'आध्यात्मिक फोकस',
-    createJourney: 'मेरी यात्रा बनाएं',
+    createJourney: 'सारथी के साथ पवित्र यात्रा बनाएं',
+    placeholders: {
+      startingPoint: 'प्रस्थान बिंदु चुनें',
+      primaryMonastery: 'मुख्य मठ चुनें',
+      duration: 'अवधि चुनें',
+      spiritualFocus: 'आध्यात्मिक फोकस चुनें'
+    },
+    options: {
+      startingPoint: ['गंगटोक', 'पेलिंग', 'युक्सोम', 'रवांगला'],
+      primaryMonastery: ['रुमटेक मठ', 'नामची मठ', 'ताशिदिंग मठ', 'एंचे मठ', 'दुब्दी मठ', 'रालांग मठ'],
+      duration: ['3–5 दिन', '1 सप्ताह', '1–2 सप्ताह'],
+      spiritualFocus: ['ध्यान', 'बौद्ध दर्शन', 'सांस्कृतिक विसर्जन', 'पवित्र तीर्थयात्रा']
+    },
     monasteryShowcase: 'पवित्र मठ',
     monasteryShowcaseSubtitle: 'हिमालय की गोद में बसे प्राचीन बौद्ध मठों का अन्वेषण करें',
     exploreMonastery: 'विवरण देखें',
-    spiritualExperiences: 'आध्यात्मिक अनुभव',
+    spiritualExperiences: 'आध्यात्मिक अनुभव और स्थानीय संस्कृति',
     spiritualExperiencesSubtitle: 'प्रामाणिक बौद्ध प्रथाओं और सिक्किमी संस्कृति में खुद को डुबोएं',
     bookExperience: 'अनुभव बुक करें',
     buddhist: 'सिक्किम की बौद्ध परंपराएं',
@@ -284,8 +309,8 @@ const translations = {
       selectTime: 'समय चुनें',
       participants: 'प्रतिभागियों की संख्या',
       specialRequests: 'विशेष अनुरोध',
-      totalCost: 'अनुमानित लागत',
-      bookNow: 'बुकिंग की पुष्टि करें'
+      totalCost: 'कुल लागत',
+      bookNow: 'अभी बुक करें'
     },
     monasteryModal: {
       history: 'इतिहास और महत्व',
@@ -430,16 +455,28 @@ const translations = {
       contact: 'सम्पर्क',
     },
     planJourney: 'तपाईको आध्यात्मिक यात्राको योजना बनाउनुहोस्',
-    planJourneySubtitle: 'तपाईंको रुचि र समयमा आधारित अनुकूलित यात्रा कार्यक्रम',
+    planJourneySubtitle: 'सारथीलाई सिक्किमभरि व्यक्तिगत गुम्बा तीर्थयात्राको माध्यमबाट मार्गदर्शन गर्न दिनुहोस्',
     startingPoint: 'प्रस्थान विन्दु',
     primaryMonastery: 'मुख्य गुम्बा',
     duration: 'अवधि',
     spiritualFocus: 'आध्यात्मिक फोकस',
-    createJourney: 'मेरो यात्रा बनाउनुहोस्',
+    createJourney: 'सारथीसँग पवित्र यात्रा सिर्जना गर्नुहोस्',
+    placeholders: {
+      startingPoint: 'प्रस्थान विन्दु चयन गर्नुहोस्',
+      primaryMonastery: 'मुख्य गुम्बा चयन गर्नुहोस्',
+      duration: 'अवधि चयन गर्नुहोस्',
+      spiritualFocus: 'आध्यात्मिक फोकस चयन गर्नुहोस्'
+    },
+    options: {
+      startingPoint: ['गान्तोक', 'पेलिङ', 'युक्सोम', 'राभाङ्ला'],
+      primaryMonastery: ['रुमटेक गुम्बा', 'नामची गुम्बा', 'ताशिदिङ गुम्बा', 'एन्चे गुम्बा', 'दुब्दी गुम्बा', 'रालाङ गुम्बा'],
+      duration: ['३–५ दिन', '१ हप्ता', '१–२ हप्ता'],
+      spiritualFocus: ['ध्यान', 'बौद्ध दर्शन', 'सांस्कृतिक विसर्जन', 'पवित्र तीर्थयात्रा']
+    },
     monasteryShowcase: 'पवित्र गुम्बाहरू',
     monasteryShowcaseSubtitle: 'हिमालयको काखमा रहेका प्राचीन बौद्ध गुम्बाहरूको अन्वेषण गर्नुहोस्',
     exploreMonastery: 'विवरण हेर्नुहोस्',
-    spiritualExperiences: 'आध्यात्मिक अनुभव',
+    spiritualExperiences: 'आध्यात्मिक अनुभव र स्थानीय संस्कृति',
     spiritualExperiencesSubtitle: 'प्रामाणिक बौद्ध प्रथाहरू र सिक्किमी संस्कृतिमा आफूलाई डुबाउनुहोस्',
     bookExperience: 'अनुभव बुक गर्नुहोस्',
     buddhist: 'सिक्किमका बौद्ध परम्पराहरू',
@@ -485,8 +522,8 @@ const translations = {
       selectTime: 'समय चयन गर्नुहोस्',
       participants: 'सहभागी संख्या',
       specialRequests: 'विशेष अनुरोध',
-      totalCost: 'अनुमानित लागत',
-      bookNow: 'बुकिङ पुष्टि गर्नुहोस्'
+      totalCost: 'कुल लागत',
+      bookNow: 'अहिले बुक गर्नुहोस्'
     },
     monasteryModal: {
       history: 'इतिहास र महत्त्व',
@@ -617,13 +654,28 @@ const translations = {
 
 const App: React.FC = () => {
   const [currentLanguage, setCurrentLanguage] = useState<keyof typeof translations>('English');
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
   const [activeSection, setActiveSection] = useState('home');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isARModalOpen, setIsARModalOpen] = useState(false);
   const [arModelId, setArModelId] = useState<string | null>(null);
   const [activeFAQ, setActiveFAQ] = useState<number | null>(null);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'info'} | null>(null);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
 
   // Form States
   const [journeyForm, setJourneyForm] = useState({
@@ -655,31 +707,67 @@ const App: React.FC = () => {
     { id: 'ralang', ...t.monasteries.ralang, image: 'Ralang.jpg', rating: 4.7, established: '1768', tradition: 'Karma Kagyu' }
   ];
 
-  const experiences = [
+  const [dynamicExperiences, setDynamicExperiences] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchExp = async () => {
+       try {
+         const loaded = await adminStorage.getExperiences();
+         setDynamicExperiences(loaded);
+       } catch (error) {
+         console.error("Failed to load dynamic experiences", error);
+       }
+    };
+    fetchExp();
+  }, []);
+
+  const staticExperiences = [
     { id: 'meditation', name: t.experiences.meditation, price: '₹2,500', duration: '3 days', image: 'meditation.webp', description: 'Deep meditation retreat with experienced monks' },
     { id: 'philosophy', name: t.experiences.philosophy, price: '₹1,800', duration: '2 days', image: 'class.jpeg', description: 'Learn Buddhist philosophy and teachings' },
     { id: 'homestay', name: t.experiences.homestay, price: '₹3,200', duration: '5 days', image: 'homestay.jpeg', description: 'Live with monks and experience daily monastery life' },
     { id: 'crafts', name: t.experiences.crafts, price: '₹800', duration: '1 day', image: 'wheel.jpeg', description: 'Create traditional prayer wheels with local artisans' }
   ];
 
+  const experiences = [...staticExperiences, ...dynamicExperiences];
+
   const showNotification = (message: string, type: 'success' | 'info' = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleJourneySubmit = (e: React.FormEvent) => {
+  const handleJourneySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!journeyForm.startingPoint || !journeyForm.primaryMonastery || !journeyForm.duration || !journeyForm.spiritualFocus) {
       alert(currentLanguage === 'English' ? 'Please fill all fields' : 'कृपया सभी फ़ील्ड भरें');
       return;
     }
-    const itinerary = generateItinerary(journeyForm);
-    setGeneratedItinerary(itinerary);
-    setShowItinerary(true);
+    
+    try {
+      await adminStorage.saveItinerary({
+        ...journeyForm,
+        userLanguage: currentLanguage
+      });
+      const itinerary = generateItinerary(journeyForm);
+      setGeneratedItinerary(itinerary);
+      setShowItinerary(true);
+      showNotification('Plan saved to your profile!', 'success');
+    } catch (error) {
+      console.error('Failed to save itinerary', error);
+      showNotification('Could not save plan, but here is your itinerary!', 'info');
+      const itinerary = generateItinerary(journeyForm);
+      setGeneratedItinerary(itinerary);
+      setShowItinerary(true);
+    }
   };
 
   const generateItinerary = (form: typeof journeyForm) => {
-    const days = form.duration === '3-5 days' ? 4 : form.duration === '1-2 weeks' ? 10 : 7;
+    let days = 7;
+    const duration = form.duration.toLowerCase();
+    
+    if (duration.includes('3–5') || duration.includes('3-5')) days = 4;
+    else if (duration.includes('1–2') || duration.includes('1-2')) days = 10;
+    else if (duration.includes('1 week') || duration.includes('1 सप्ताह') || duration.includes('१ हप्ता')) days = 7;
+
     const itinerary = [];
     for (let i = 1; i <= days; i++) {
       itinerary.push({
@@ -726,76 +814,145 @@ const App: React.FC = () => {
     setIsARModalOpen(true);
   };
 
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const subject = formData.get('subject') as string;
+    const message = formData.get('message') as string;
+
+    if (name && subject && message) {
+      try {
+        await adminStorage.saveHelpRequest({ name, subject, message });
+        showNotification('Message sent successfully!', 'success');
+        (e.target as HTMLFormElement).reset();
+      } catch (error) {
+        console.error('Failed to submit request', error);
+        showNotification('Failed to send message.', 'info');
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-950 dark:to-slate-900 transition-colors duration-500">
       {notification && (
         <div className="fixed top-24 right-4 z-50 animate-bounce-in">
-          <div className="bg-white border-l-4 border-red-600 shadow-2xl rounded-lg p-4 flex items-center space-x-3 text-gray-900">
-            <Star className="h-6 w-6 text-red-600" />
+          <div className="bg-white dark:bg-slate-800 border-l-4 border-red-600 shadow-2xl rounded-lg p-4 flex items-center space-x-3 text-gray-900 dark:text-white transition-colors">
+            <Star className="h-6 w-6 text-red-600 dark:text-red-400" />
             <p className="font-bold">{notification.message}</p>
           </div>
         </div>
       )}
 
       {/* Header */}
-      <header className="bg-white/95 backdrop-blur-sm shadow-lg sticky top-0 z-40">
+      <header className="bg-slate-900 dark:bg-black shadow-2xl sticky top-0 z-50 transition-all duration-300 border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <img src="/tours.png" alt="Sikkim Trails Logo" className="h-16 w-16 object-contain" />
-              <div>
-                <h1 className="text-2xl font-bold text-orange-800">{t.appName}</h1>
-                <p className="text-sm text-red-600">{t.tagline}</p>
+          <div className="flex justify-between items-center py-3 sm:py-4">
+            <div className="flex items-center space-x-3 group cursor-pointer" onClick={() => scrollToSection('hero')}>
+              <div className="relative">
+                <img src="/tours.png" alt="Sikkim Trails Logo" className="h-12 w-12 sm:h-16 sm:w-16 object-contain transform group-hover:rotate-12 transition-transform duration-300" />
+                <div className="absolute -inset-1 bg-red-600/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">{t.appName}</h1>
+                <p className="text-[10px] sm:text-xs font-bold text-red-500 uppercase tracking-widest">{t.tagline}</p>
               </div>
             </div>
 
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden lg:flex items-center space-x-1">
               {Object.entries(t.nav).map(([key, label]) => (
                 <button
                   key={key}
                   onClick={() => scrollToSection(key === 'home' ? 'hero' : key)}
-                  className={`text-gray-700 hover:text-red-600 transition-colors ${
-                    activeSection === (key === 'home' ? 'hero' : key) ? 'text-red-600 font-semibold' : ''
+                  className={`relative px-4 py-2 text-sm font-bold transition-all duration-300 rounded-full group overflow-hidden ${
+                    activeSection === (key === 'home' ? 'hero' : key) 
+                      ? 'text-red-500' 
+                      : 'text-gray-300 hover:text-white'
                   }`}
                 >
-                  {label}
+                  <span className="relative z-10">{label}</span>
+                  <span className={`absolute bottom-0 left-0 w-full h-1 bg-red-500 transform origin-left transition-transform duration-300 ${
+                    activeSection === (key === 'home' ? 'hero' : key) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  }`}></span>
+                  <span className="absolute inset-0 bg-white/10 transform scale-0 group-hover:scale-100 transition-transform duration-300 rounded-full -z-0"></span>
                 </button>
               ))}
             </nav>
 
-            <div className="flex items-center space-x-4">
-              <select
-                value={currentLanguage}
-                onChange={(e) => setCurrentLanguage(e.target.value as keyof typeof translations)}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="flex bg-white/10 p-1 rounded-xl border border-white/10 shadow-sm transition-all">
+                <button 
+                  onClick={() => setIsDarkMode(!isDarkMode)}
+                  className="p-2 rounded-lg transition-all transform hover:scale-110 active:scale-95 text-gray-300 hover:bg-white/10 hover:shadow-sm"
+                  aria-label="Toggle Theme"
+                >
+                  {isDarkMode ? <Sun className="h-5 w-5 text-yellow-500" /> : <Moon className="h-5 w-5 text-blue-400" />}
+                </button>
+
+                <div className="w-[1px] bg-white/20 mx-1 self-stretch"></div>
+
+                <select
+                  value={currentLanguage}
+                  onChange={(e) => setCurrentLanguage(e.target.value as keyof typeof translations)}
+                  className="bg-transparent border-none rounded-lg px-2 py-1 text-xs sm:text-sm font-bold focus:outline-none text-white cursor-pointer"
+                >
+                  <option value="English" className="bg-slate-900">EN</option>
+                  <option value="हिन्दी" className="bg-slate-900">HI</option>
+                  <option value="नेपाली" className="bg-slate-900">NE</option>
+                </select>
+              </div>
+
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+                className="lg:hidden p-2 rounded-xl bg-red-600 text-white shadow-lg shadow-red-600/20 active:scale-90 transition-all font-bold"
               >
-                <option value="English">🇬🇧 English</option>
-                <option value="हिन्दी">🇮🇳 हिन्दी</option>
-                <option value="नेपाली">🇳🇵 नेपाली</option>
-              </select>
-              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100">
                 <Menu className="h-6 w-6" />
               </button>
             </div>
           </div>
-          {isMobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-200">
-              <nav className="flex flex-col space-y-4">
+        </div>
+
+        {/* Mobile Menu Drawer */}
+        <div className={`fixed inset-0 z-[60] lg:hidden transition-all duration-500 ${isMobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className={`absolute right-0 top-0 h-full w-[80%] max-w-sm bg-slate-900 dark:bg-black shadow-2xl transition-transform duration-500 transform ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="p-6 flex flex-col h-full">
+              <div className="flex justify-between items-center mb-10">
+                <h2 className="text-2xl font-black text-orange-800 dark:text-orange-400">Navigation</h2>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-xl bg-gray-100/50 dark:bg-slate-800/50 backdrop-blur-md text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <nav className="flex flex-col space-y-2 flex-1">
                 {Object.entries(t.nav).map(([key, label]) => (
-                  <button key={key} onClick={() => scrollToSection(key === 'home' ? 'hero' : key)} className="text-left text-gray-700 hover:text-red-600">
-                    {label}
+                  <button
+                    key={key}
+                    onClick={() => scrollToSection(key === 'home' ? 'hero' : key)}
+                    className={`flex items-center justify-between p-4 rounded-2xl font-bold transition-all ${
+                      activeSection === (key === 'home' ? 'hero' : key)
+                        ? 'bg-red-600 text-white shadow-lg shadow-red-600/30'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>{label}</span>
+                    <ChevronRight className={`h-5 w-5 transition-transform ${activeSection === (key === 'home' ? 'hero' : key) ? 'rotate-90' : ''}`} />
                   </button>
                 ))}
               </nav>
+
+              <div className="mt-auto pt-6 border-t border-gray-100 dark:border-slate-800">
+                <p className="text-gray-400 text-xs text-center">© 2025 SikkimTrails. Spirit of Sikkim.</p>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section id="hero" className="relative h-screen flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: 'url("/sikkim.jpg")' }}>
-        <div className="absolute inset-0 bg-black/40"></div>
-        <div className="relative z-10 text-center text-white px-4 max-w-4xl">
+      <section id="hero" className="relative h-[80vh] sm:h-screen flex items-center justify-center bg-cover bg-center overflow-hidden" style={{ backgroundImage: 'url("/sikkim.jpg")' }}>
+        <div className="absolute inset-0 bg-black/50 dark:bg-black/70 transition-colors duration-500"></div>
+        <div className="relative z-10 text-center text-white px-4 max-w-4xl animate-fade-in">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">{t.heroTitle}</h1>
           <p className="text-xl md:text-2xl mb-8 text-orange-100">{t.heroSubtitle}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -810,49 +967,72 @@ const App: React.FC = () => {
       </section>
 
       {/* Journey Form */}
-      <section id="spiritualJourney" className="py-20 bg-orange-50">
+      <section id="spiritualJourney" className="py-20 bg-orange-50/50 dark:bg-slate-950 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-16">{t.planJourney}</h2>
-          <form onSubmit={handleJourneySubmit} className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 grid md:grid-cols-2 gap-6 text-left">
-            {['startingPoint', 'primaryMonastery', 'duration', 'spiritualFocus'].map((field) => (
-              <div key={field}>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">{t[field as keyof typeof t] as string}</label>
-                <select
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-gray-900"
-                  onChange={(e) => setJourneyForm({...journeyForm, [field]: e.target.value})}
-                  required
-                >
-                  <option value="">Select {t[field as keyof typeof t] as string}</option>
-                  {field === 'primaryMonastery' ? monasteries.map(m => <option key={m.id} value={m.name}>{m.name}</option>) : <option value="Option">Placeholder Options</option>}
-                </select>
-              </div>
-            ))}
-            <button type="submit" className="md:col-span-2 bg-gradient-to-r from-red-600 to-orange-600 text-white py-4 rounded-lg font-bold hover:scale-[1.02] transition-transform">
-              {t.createJourney}
-            </button>
-          </form>
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t.planJourney}</h2>
+          <p className="text-xl text-gray-600 dark:text-slate-400 mb-16 max-w-2xl mx-auto">{t.planJourneySubtitle}</p>
+          <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 sm:p-10 border border-orange-100/50 dark:border-slate-800">
+            <form onSubmit={handleJourneySubmit} className="grid md:grid-cols-2 gap-6 sm:gap-8 text-left">
+              {[
+                { id: 'startingPoint', icon: MapPin },
+                { id: 'primaryMonastery', icon: Mountain },
+                { id: 'duration', icon: Clock },
+                { id: 'spiritualFocus', icon: Sparkles }
+              ].map((field) => (
+                <div key={field.id} className="group">
+                  <label className="flex items-center text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 group-focus-within:text-red-600 dark:group-focus-within:text-red-400 transition-colors">
+                    <field.icon className="h-4 w-4 mr-2 text-red-600 dark:text-red-400" />
+                    {t[field.id as keyof typeof t] as string}
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="w-full px-4 py-4 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:ring-red-500/10 focus:border-red-500 text-gray-900 dark:text-white transition-all outline-none appearance-none cursor-pointer hover:bg-white dark:hover:bg-slate-700 pr-10 shadow-sm"
+                      onChange={(e) => setJourneyForm({...journeyForm, [field.id]: e.target.value})}
+                      value={journeyForm[field.id as keyof typeof journeyForm]}
+                      required
+                    >
+                      <option value="">{(t as any).placeholders[field.id]}</option>
+                      {((t as any).options[field.id] as string[]).map(option => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-400 group-hover:text-red-500 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <button 
+                type="submit" 
+                className="md:col-span-2 mt-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-5 rounded-2xl font-black text-xl hover:shadow-[0_20px_50px_rgba(220,38,38,0.3)] hover:-translate-y-1 active:translate-y-0 transition-all shadow-xl flex items-center justify-center space-x-3 group"
+              >
+                <span>{t.createJourney}</span>
+                <Sparkles className="h-6 w-6 group-hover:animate-spin" />
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
       {/* Monasteries Showcase */}
-      <section id="monasteries" className="py-20 bg-white">
+      <section id="monasteries" className="py-20 bg-white dark:bg-slate-900 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900">{t.monasteryShowcase}</h2>
-            <p className="text-gray-600 mt-4">{t.monasteryShowcaseSubtitle}</p>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white">{t.monasteryShowcase}</h2>
+            <p className="text-gray-600 dark:text-slate-400 mt-4">{t.monasteryShowcaseSubtitle}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {monasteries.map(m => (
-              <div key={m.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-2xl transition-all">
+              <div key={m.id} className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-gray-100 dark:border-slate-700 overflow-hidden group hover:shadow-2xl transition-all">
                 <div className="relative h-48 overflow-hidden">
                   <img src={m.image} alt={m.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                  <div className="absolute top-4 right-4 bg-white/90 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 text-gray-900">
+                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 text-gray-900 dark:text-white">
                     <Star className="h-3 w-3 text-yellow-500 fill-current" /> {m.rating}
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{m.name}</h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{m.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{m.name}</h3>
+                  <p className="text-gray-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">{m.description}</p>
                   <div className="flex gap-2">
                     <button onClick={() => setSelectedMonastery(m.id)} className="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors">
                       {t.exploreMonastery}
@@ -869,20 +1049,34 @@ const App: React.FC = () => {
       </section>
 
       {/* Experiences */}
-      <section id="experiences" className="py-20 bg-orange-50">
+      <section id="experiences" className="py-20 bg-orange-50 dark:bg-slate-950 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900">{t.spiritualExperiences}</h2>
-            <p className="text-gray-600 mt-4">{t.spiritualExperiencesSubtitle}</p>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white">{t.spiritualExperiences}</h2>
+            <p className="text-gray-600 dark:text-slate-400 mt-4">{t.spiritualExperiencesSubtitle}</p>
           </div>
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-4 gap-8">
             {experiences.map(e => (
-              <div key={e.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:-translate-y-1 transition-transform">
-                <img src={e.image} alt={e.name} className="h-32 w-full object-cover" />
-                <div className="p-4">
-                  <h4 className="font-bold text-gray-900 mb-1">{e.name}</h4>
-                  <p className="text-red-600 text-sm font-bold mb-3">{e.price}</p>
-                  <button onClick={() => setSelectedExperience(e.id)} className="w-full bg-orange-100 text-orange-700 py-2 rounded-lg text-sm font-bold hover:bg-orange-200">
+              <div key={e.id} className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <div className="relative h-48">
+                  <img src={e.image} alt={e.name} className="w-full h-full object-cover" />
+                  <div className="absolute top-4 right-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-red-600 dark:text-red-400 shadow-md">
+                    {e.price}
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{e.name}</h3>
+                  <p className="text-gray-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">{e.description}</p>
+                  <div className="flex items-center mb-6">
+                    <span className="text-sm text-orange-600 dark:text-orange-400 font-semibold bg-orange-100 dark:bg-orange-900/30 px-3 py-1 rounded-full flex items-center">
+                      <Clock className="h-4 w-4 mr-1.5" />
+                      {e.duration}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedExperience(e.id)} 
+                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-3 rounded-lg font-bold shadow-lg transition-all"
+                  >
                     {t.bookExperience}
                   </button>
                 </div>
@@ -892,40 +1086,89 @@ const App: React.FC = () => {
         </div>
       </section>
 
+
+      {/* Buddhist Traditions Section restored */}
+      <section id="traditions" className="py-24 bg-[#8B312C] dark:bg-slate-950 text-white overflow-hidden transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl font-bold mb-6">{t.buddhist}</h2>
+            <p className="text-xl text-orange-100/80 max-w-3xl mx-auto font-medium">{t.buddhistSubtitle}</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+              <h4 className="text-2xl font-bold mb-6 flex items-center">{t.traditions.nyingma.title}</h4>
+              <p className="text-orange-50/90 leading-relaxed mb-6">{t.traditions.nyingma.description}</p>
+              <ul className="space-y-2 text-orange-200/80">
+                {['Dubdi Monastery', 'Tashiding Monastery', 'Enchey Monastery'].map(item => <li key={item}>ΓÇó {item}</li>)}
+              </ul>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+              <h4 className="text-2xl font-bold mb-6 flex items-center">{t.traditions.kagyu.title}</h4>
+              <p className="text-orange-50/90 leading-relaxed mb-6">{t.traditions.kagyu.description}</p>
+              <ul className="space-y-2 text-orange-200/80">
+                {['Rumtek Monastery', 'Ralang Monastery', 'Namchi Monastery'].map(item => <li key={item}>ΓÇó {item}</li>)}
+              </ul>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+              <h4 className="text-2xl font-bold mb-6 flex items-center">{t.traditions.festivals.title}</h4>
+              <p className="text-orange-50/90 leading-relaxed mb-6">{t.traditions.festivals.description}</p>
+              <ul className="space-y-2 text-orange-200/80">
+                {['Losar (Tibetan New Year)', 'Saga Dawa Festival', 'Bumchu Ceremony'].map(item => <li key={item}>ΓÇó {item}</li>)}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Packages t={t} />
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-white">
+      <section id="about" className="py-24 bg-orange-50/30 dark:bg-slate-950/30 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900">{t.about.title}</h2>
-            <p className="text-red-600 font-bold mt-2 uppercase tracking-widest text-sm">{t.about.subtitle}</p>
-            <p className="text-gray-600 max-w-3xl mx-auto mt-6 text-lg">{t.about.description}</p>
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t.about.title}</h2>
+            <p className="text-xl text-red-600 dark:text-red-400 font-semibold mb-8 uppercase tracking-widest">{t.about.subtitle}</p>
+            <p className="text-lg text-gray-600 dark:text-slate-400 max-w-4xl mx-auto leading-relaxed">{t.about.description}</p>
           </div>
+
           <div className="grid md:grid-cols-4 gap-8 mb-20">
-            {['mission', 'vision', 'values', 'team'].map((key) => (
-              <div key={key} className="p-8 bg-orange-50 rounded-2xl text-center">
-                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
-                  {key === 'mission' ? <Heart /> : key === 'vision' ? <Award /> : key === 'values' ? <Shield /> : <Users />}
-                </div>
-                <h3 className="font-bold text-gray-900 mb-2">{t.about[key as keyof typeof t.about] as string}</h3>
-                <p className="text-sm text-gray-600">{t.about[(key + 'Text') as keyof typeof t.about] as string}</p>
-              </div>
-            ))}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center shadow-lg hover:shadow-xl transition-all h-full flex flex-col items-center border border-gray-100 dark:border-slate-700">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-6"><Heart className="h-8 w-8 text-white" /></div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t.about.mission}</h3>
+              <p className="text-gray-600 dark:text-slate-400">{t.about.missionText}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center shadow-lg hover:shadow-xl transition-all h-full flex flex-col items-center border border-gray-100 dark:border-slate-700">
+              <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mb-6"><Award className="h-8 w-8 text-white" /></div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t.about.vision}</h3>
+              <p className="text-gray-600 dark:text-slate-400">{t.about.visionText}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center shadow-lg hover:shadow-xl transition-all h-full flex flex-col items-center border border-gray-100 dark:border-slate-700">
+              <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mb-6"><Shield className="h-8 w-8 text-white" /></div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t.about.values}</h3>
+              <p className="text-gray-600 dark:text-slate-400">{t.about.valuesText}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 text-center shadow-lg hover:shadow-xl transition-all h-full flex flex-col items-center border border-gray-100 dark:border-slate-700">
+              <div className="w-16 h-16 bg-orange-600 rounded-full flex items-center justify-center mb-6"><Users className="h-8 w-8 text-white" /></div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t.about.team}</h3>
+              <p className="text-gray-600 dark:text-slate-400">{t.about.teamText}</p>
+            </div>
           </div>
-          {/* Team Members */}
-          <div className="text-center">
+
+          <div className="text-center mb-12">
             <h3 className="text-3xl font-bold text-gray-900 mb-8">Meet Our Team</h3>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-12">
               {[
-                { name: 'Ashish Panwar', role: 'Founder & CEO', img: 'ashish.jpg' },
-                { name: 'Niharika Pal', role: 'Creative Director', img: 'nikki.jpeg' },
-                { name: 'Puru Sharma', role: 'Technical Lead', img: 'puru.jpeg' }
+                { name: 'Ashish Panwar', role: 'Founder & CEO', img: 'ashish.jpg', bio: 'Leading the team with innovation and vision.' },
+                { name: 'Niharika Pal', role: 'Creative Director', img: 'nikki.jpeg', bio: 'Bringing creative ideas and smart strategies.' },
+                { name: 'Puru Sharma', role: 'Technical Lead', img: 'puru.jpeg', bio: 'Building reliable and scalable solutions.' }
               ].map(person => (
                 <div key={person.name} className="text-center group">
-                  <img src={person.img} alt={person.name} className="w-32 h-32 rounded-full mx-auto mb-4 object-cover border-4 border-orange-200 group-hover:border-red-600 transition-colors" />
-                  <h4 className="font-bold text-gray-900">{person.name}</h4>
-                  <p className="text-red-600 text-sm">{person.role}</p>
+                  <div className="relative inline-block mb-4">
+                    <img src={person.img} alt={person.name} className="w-32 h-32 rounded-full object-cover border-4 border-orange-100 group-hover:border-red-600 transition-all duration-300" />
+                  </div>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{person.name}</h4>
+                  <p className="text-red-600 dark:text-red-400 font-semibold mb-2">{person.role}</p>
+                  <p className="text-gray-500 dark:text-slate-500 text-sm max-w-xs mx-auto">{person.bio}</p>
                 </div>
               ))}
             </div>
@@ -934,71 +1177,181 @@ const App: React.FC = () => {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 bg-orange-50">
+      <section id="faq" className="py-20 bg-orange-50 dark:bg-slate-950 transition-colors duration-500">
         <div className="max-w-3xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Traveler Essentials</h2>
+          <h2 className="text-3xl font-bold text-center mb-12 dark:text-white">Traveler Essentials</h2>
           <div className="space-y-4">
             {[
               { q: 'How do I get a Restricted Area Permit (RAP)?', a: 'Obtain it at checkposts with 2 photos and ID proof.' },
               { q: 'Best way to prevent altitude sickness?', a: 'Acclimatize gradually in Gangtok and stay hydrated.' }
             ].map((item, idx) => (
-              <div key={idx} className="bg-white rounded-xl shadow-sm overflow-hidden">
-                <button onClick={() => setActiveFAQ(activeFAQ === idx ? null : idx)} className="w-full p-6 text-left font-bold flex justify-between items-center text-gray-900">
+              <div key={idx} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-slate-700">
+                <button onClick={() => setActiveFAQ(activeFAQ === idx ? null : idx)} className="w-full p-6 text-left font-bold flex justify-between items-center text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                   {item.q} <Sparkles className={`h-4 w-4 text-orange-500 transition-transform ${activeFAQ === idx ? 'rotate-180' : ''}`} />
                 </button>
-                {activeFAQ === idx && <div className="px-6 pb-6 text-gray-600 text-sm">{item.a}</div>}
+                {activeFAQ === idx && <div className="px-6 pb-6 text-gray-600 dark:text-slate-400 text-sm animate-fade-in">{item.a}</div>}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Contact */}
-      <section id="contact" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-12">
-          <div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">{t.contact.title}</h2>
-            <p className="text-red-600 font-bold mb-8">{t.contact.getInTouch}</p>
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="p-3 bg-red-600 rounded-full text-white"><MapPin /></div>
-                <div><h4 className="font-bold text-gray-900">{t.contact.address}</h4><p className="text-gray-600">{t.contact.addressText}</p></div>
-              </div>
-              <div className="flex gap-4">
-                <div className="p-3 bg-orange-600 rounded-full text-white"><Phone /></div>
-                <div><h4 className="font-bold text-gray-900">{t.contact.phone}</h4><p className="text-gray-600">{t.contact.phoneText}</p></div>
+      {/* Interactive Map Section */}
+      <section id="map" className="py-24 bg-orange-50/30 dark:bg-slate-950 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
+                <MapPin className="h-10 w-10 text-red-600 dark:text-red-400" />
               </div>
             </div>
+            <h3 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t.interactiveMap}</h3>
+            <p className="text-xl text-gray-600 dark:text-slate-400 max-w-2xl mx-auto">
+              {t.routePlannerSubtitle}
+            </p>
           </div>
-          <div className="bg-orange-50 p-8 rounded-2xl">
-            <h3 className="text-xl font-bold mb-6 text-gray-900">{t.contact.sendMessage}</h3>
-            <form className="space-y-4">
-              <input type="text" placeholder={t.contact.name} className="w-full p-3 rounded-lg border text-gray-900" required />
-              <input type="text" placeholder={t.contact.subject} className="w-full p-3 rounded-lg border text-gray-900" required />
-              <textarea placeholder={t.contact.message} className="w-full p-3 rounded-lg border h-32 text-gray-900" required></textarea>
-              <button className="w-full bg-red-600 text-white py-3 rounded-lg font-bold">Submit</button>
-            </form>
+
+          <div className="max-w-5xl mx-auto bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-8 shadow-2xl border border-gray-100 dark:border-slate-700">
+            <div className="bg-gray-100 dark:bg-slate-900 rounded-2xl overflow-hidden shadow-inner">
+              <div className="relative w-full h-[500px]">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m12!1m8!1m3!1d453610.04136021645!2d88.2657417!3d27.3498313!3m2!1i1024!2i768!4f13.1!2m1!1ssikkim%20monastery%20MAP%20LINK!5e0!3m2!1sen!2sin!4v1758209245407!5m2!1sen!2sin"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="grayscale hover:grayscale-0 transition-all duration-700"
+                ></iframe>
+                <div className="absolute top-4 left-4">
+                  <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm px-4 py-2 rounded-lg text-red-600 dark:text-red-400 font-bold text-sm shadow-xl flex items-center space-x-2 hover:scale-105 transition-all">
+                    <span>Open in Maps</span>
+                    <Sparkles className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div className="mt-10 text-center">
+              <button 
+                onClick={() => { scrollToSection('spiritualJourney'); showNotification(currentLanguage === 'English' ? 'Let Saarthi plan your journey!' : 'आरती को अपनी यात्रा की योजना बनाने दें!'); }}
+                className="bg-gradient-to-r from-red-600 to-orange-500 text-white px-10 py-4 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 flex items-center space-x-3 mx-auto"
+              >
+                <Sparkles className="h-6 w-6" />
+                <span>{t.generateItinerary}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" className="py-24 bg-white dark:bg-slate-900 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t.contact.title}</h2>
+            <p className="text-xl text-red-600 dark:text-red-400 font-semibold">{t.contact.subtitle}</p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">{t.contact.getInTouch}</h3>
+              <div className="space-y-8">
+                <div className="flex items-start space-x-6">
+                  <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-lg"><MapPin className="h-6 w-6" /></div>
+                  <div><h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{t.contact.address}</h4><p className="text-gray-600 dark:text-slate-400">{t.contact.addressText}</p></div>
+                </div>
+                <div className="flex items-start space-x-6">
+                  <div className="w-14 h-14 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-lg"><Phone className="h-6 w-6" /></div>
+                  <div><h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{t.contact.phone}</h4><p className="text-gray-600 dark:text-slate-400">{t.contact.phoneText}</p></div>
+                </div>
+                <div className="flex items-start space-x-6">
+                  <div className="w-14 h-14 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-lg"><MessageCircle className="h-6 w-6" /></div>
+                  <div><h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{t.contact.email}</h4><p className="text-gray-600 dark:text-slate-400 font-medium">namaste@ghoomo.india</p></div>
+                </div>
+                <div className="flex items-start space-x-6">
+                  <div className="w-14 h-14 bg-orange-600 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-lg"><Clock className="h-6 w-6" /></div>
+                  <div><h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{t.contact.hours}</h4><p className="text-gray-600 dark:text-slate-400">{t.contact.hoursText}</p></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-8 sm:p-10 shadow-xl border border-orange-100 dark:border-slate-700">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">{t.contact.sendMessage}</h3>
+              <form onSubmit={handleContactSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.contact.name}</label>
+                  <input type="text" name="name" className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 transition-all outline-none text-gray-900 dark:text-white" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.contact.subject}</label>
+                  <input type="text" name="subject" className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 transition-all outline-none text-gray-900 dark:text-white" required />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t.contact.message}</label>
+                  <textarea name="message" rows={5} className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-red-500 transition-all outline-none resize-none text-gray-900 dark:text-white" required></textarea>
+                </div>
+                <button type="submit" className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-4 rounded-xl font-bold shadow-lg transition-all transform hover:scale-[1.01] active:scale-95 text-lg">
+                  {t.contact.submit}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <img src="/tours.png" alt="Sikkim Trails Logo" className="h-12 mx-auto mb-6" />
-          <h3 className="text-xl font-bold mb-2">{t.appName}</h3>
-          <p className="text-gray-400 max-w-xl mx-auto mb-8 font-medium">{t.footer.description}</p>
-          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-500 text-sm">{t.footer.copyright}</p>
-            <div className="flex gap-4 text-xs text-gray-400">
-              <a href="#about" className="hover:text-white">Privacy Policy</a>
-              <a href="#about" className="hover:text-white">Terms of Service</a>
+      <footer className="bg-[#0B1221] text-white py-16 border-t border-gray-800/50 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-12 mb-12">
+            <div className="md:col-span-2">
+              <div className="flex items-center space-x-3 mb-6">
+                <img src="/tours.png" alt="Sikkim Trails Logo" className="h-14 transform hover:scale-110 transition-transform" />
+                <div>
+                  <h3 className="text-2xl font-black tracking-tight">{t.appName}</h3>
+                  <p className="text-red-500 font-bold text-sm tracking-widest uppercase">{t.tagline}</p>
+                </div>
+              </div>
+              <p className="text-gray-400 mb-8 max-w-md leading-relaxed">{t.footer.description}</p>
+              <div className="flex space-x-4">
+                <button className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center hover:bg-red-700 transition-all shadow-lg active:scale-95 group"><Star className="h-6 w-6 group-hover:rotate-45 transition-transform" /></button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold mb-6 border-l-4 border-red-600 pl-3">{t.footer.sacredPlaces}</h4>
+              <ul className="space-y-3 text-gray-400">
+                {['Rumtek Monastery', 'Namchi Monastery', 'Tashiding Monastery', 'Enchey Monastery'].map(m => (
+                  <li key={m} className="hover:text-red-500 transition-colors cursor-pointer flex items-center group">
+                    <div className="w-1.5 h-1.5 bg-gray-600 group-hover:bg-red-500 rounded-full mr-3 transition-colors"></div> {m}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold mb-6 border-l-4 border-red-600 pl-3">{t.footer.support}</h4>
+              <ul className="space-y-3 text-gray-400">
+                {['About', 'Contact', 'Spiritual Journey', 'Experiences'].map(link => (
+                  <li key={link} className="hover:text-red-500 transition-colors cursor-pointer flex items-center group">
+                    <div className="w-1.5 h-1.5 bg-gray-600 group-hover:bg-red-500 rounded-full mr-3 transition-colors"></div> {link}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800/50 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+            <p className="mb-4 md:mb-0">{t.footer.copyright}</p>
+            <div className="flex items-center space-x-6">
+              <p>Follow us for spiritual inspiration</p>
+              <button onClick={() => setIsAdminOpen(true)} className="text-gray-600 hover:text-white transition-all text-[10px] uppercase font-bold tracking-widest border border-gray-800 px-2 py-1 rounded">Admin</button>
             </div>
           </div>
         </div>
       </footer>
 
-      <button onClick={() => setIsChatOpen(true)} className="fixed bottom-6 right-6 bg-red-600 text-white p-4 rounded-full shadow-2xl animate-bounce">
+      <button onClick={() => setIsChatOpen(true)} className="fixed bottom-6 right-6 bg-red-600 text-white p-4 rounded-full shadow-2xl animate-bounce z-50">
         <MessageCircle size={24} />
       </button>
 
@@ -1015,8 +1368,8 @@ const App: React.FC = () => {
 
       {/* Monastery Detail Modal */}
       {selectedMonastery && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl w-[95vw] max-w-3xl h-[85vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center p-2 z-[100] backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-[95vw] max-w-3xl h-[85vh] overflow-hidden flex flex-col border border-gray-200 dark:border-slate-800">
             {(() => {
               const monastery = monasteries.find(m => m.id === selectedMonastery);
               const monasteryData = monastery ? t.monasteries[selectedMonastery as keyof typeof t.monasteries] : null;
@@ -1034,30 +1387,30 @@ const App: React.FC = () => {
                     />
                     <button
                       onClick={() => setSelectedMonastery(null)}
-                      className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white/90 hover:bg-white text-gray-800 p-1 sm:p-2 rounded-full transition-colors"
+                      className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-gray-800 dark:text-white p-1 sm:p-2 rounded-full transition-colors"
                     >
                       <X className="h-5 w-5 sm:h-6 sm:w-6" />
                     </button>
-                    <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full flex items-center space-x-1 sm:space-x-2">
+                    <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-full flex items-center space-x-1 sm:space-x-2 border border-gray-100 dark:border-slate-800 transition-colors">
                       <Star className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 fill-current" />
-                      <span className="font-semibold text-sm sm:text-base">{monastery.rating}</span>
+                      <span className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">{monastery.rating}</span>
                     </div>
                   </div>
 
                   {/* Scrollable Content */}
-                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 text-gray-900">
+                  <div className="flex-1 overflow-y-auto p-4 sm:p-6 text-gray-900 dark:text-gray-100 bg-white dark:bg-slate-900 transition-colors">
                     <div className="mb-4">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{monastery.name}</h2>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{monastery.name}</h2>
                       </div>
 
-                      <p className="text-gray-600 mb-3 text-sm sm:text-base">{monastery.description}</p>
+                      <p className="text-gray-600 dark:text-slate-400 mb-3 text-sm sm:text-base">{monastery.description}</p>
 
                       <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
-                        <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full font-semibold">
+                        <span className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 px-2 py-1 rounded-full font-semibold">
                           Est. {monastery.established}
                         </span>
-                        <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-semibold">
+                        <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 px-2 py-1 rounded-full font-semibold">
                           {monastery.tradition}
                         </span>
                       </div>
@@ -1065,43 +1418,43 @@ const App: React.FC = () => {
 
                     <div className="grid md:grid-cols-2 gap-4 sm:gap-6 text-sm sm:text-base">
                       <div>
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 flex items-center">
-                          <Award className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600" />
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+                          <Award className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600 dark:text-red-400" />
                           {t.monasteryModal.history}
                         </h3>
-                        <p className="text-gray-600 mb-4">{monasteryData.history}</p>
+                        <p className="text-gray-600 dark:text-slate-400 mb-4">{monasteryData.history}</p>
 
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 flex items-center">
-                          <Heart className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600" />
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+                          <Heart className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600 dark:text-red-400" />
                           {t.monasteryModal.traditions}
                         </h3>
-                        <p className="text-gray-600">{monasteryData.traditions}</p>
+                        <p className="text-gray-600 dark:text-slate-400">{monasteryData.traditions}</p>
                       </div>
 
                       <div>
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 flex items-center">
-                          <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600" />
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+                          <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600 dark:text-red-400" />
                           {t.monasteryModal.visitingHours}
                         </h3>
-                        <p className="text-gray-600 mb-4">{monasteryData.hours}</p>
+                        <p className="text-gray-600 dark:text-slate-400 mb-4">{monasteryData.hours}</p>
 
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 flex items-center">
-                          <MapPin className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600" />
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+                          <MapPin className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600 dark:text-red-400" />
                           {t.monasteryModal.location}
                         </h3>
-                        <p className="text-gray-600 mb-4">{monasteryData.location}</p>
+                        <p className="text-gray-600 dark:text-slate-400 mb-4">{monasteryData.location}</p>
 
-                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 flex items-center">
-                          <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600" />
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+                          <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-red-600 dark:text-red-400" />
                           {t.monasteryModal.nearbyAttractions}
                         </h3>
-                        <p className="text-gray-600">{monasteryData.attractions}</p>
+                        <p className="text-gray-600 dark:text-slate-400">{monasteryData.attractions}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Footer Buttons */}
-                  <div className="p-3 sm:p-4 border-t border-gray-200 flex flex-col gap-2">
+                  <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex flex-col gap-2 transition-colors">
                     <button
                       onClick={() => {
                         setSelectedMonastery(null);
@@ -1139,17 +1492,118 @@ const App: React.FC = () => {
       )}
 
       {selectedExperience && (
-        <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-8 text-gray-900">
-            <h3 className="text-2xl font-bold mb-6">{t.bookingModal.title}</h3>
-            <form onSubmit={handleBookingSubmit} className="space-y-4">
-              <input type="date" className="w-full p-3 border rounded-lg" required onChange={(e) => setBookingData({...bookingData, date: e.target.value})} />
-              <input type="number" placeholder="Participants" className="w-full p-3 border rounded-lg" required min="1" onChange={(e) => setBookingData({...bookingData, participants: parseInt(e.target.value)})} />
-              <button type="submit" className="w-full bg-red-600 text-white py-3 rounded-lg font-bold">Book Now</button>
-              <button type="button" onClick={() => setSelectedExperience(null)} className="w-full text-gray-500 font-medium">Cancel</button>
-            </form>
+        <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center p-4 z-[100] backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-200 dark:border-slate-800 transition-colors duration-500">
+            {(() => {
+              const experience = experiences.find(e => e.id === selectedExperience);
+              if (!experience) return null;
+
+              return (
+                <>
+                  {/* Modal Header */}
+                  <div className="bg-gradient-to-r from-red-600 to-orange-600 text-white p-6 relative">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-2xl font-bold">{t.bookingModal.title}</h3>
+                        <p className="text-orange-100 font-medium">{experience.name}</p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedExperience(null)}
+                        className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-all"
+                      >
+                        <X className="h-6 w-6" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Modal Body */}
+                  <form onSubmit={handleBookingSubmit} className="p-8 space-y-6 bg-white dark:bg-slate-900 transition-colors">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                          {t.bookingModal.selectDate}
+                        </label>
+                        <input
+                          type="date"
+                          value={bookingData.date}
+                          onChange={(e) => setBookingData({...bookingData, date: e.target.value})}
+                          className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white transition-all"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                          {t.bookingModal.selectTime}
+                        </label>
+                        <select
+                          value={bookingData.time}
+                          onChange={(e) => setBookingData({...bookingData, time: e.target.value})}
+                          className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white transition-all dropdown-caret shadow-sm"
+                          required
+                        >
+                          <option value="" className="dark:bg-slate-800">Select time</option>
+                          <option value="09:00" className="dark:bg-slate-800">09:00 AM</option>
+                          <option value="11:00" className="dark:bg-slate-800">11:00 AM</option>
+                          <option value="14:00" className="dark:bg-slate-800">02:00 PM</option>
+                          <option value="16:00" className="dark:bg-slate-800">04:00 PM</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        {t.bookingModal.participants}
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={bookingData.participants}
+                        onChange={(e) => setBookingData({...bookingData, participants: parseInt(e.target.value) || 1})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 font-bold"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        {t.bookingModal.specialRequests}
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={bookingData.specialRequests}
+                        onChange={(e) => setBookingData({...bookingData, specialRequests: e.target.value})}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                        placeholder="Any special requirements or dietary restrictions..."
+                      ></textarea>
+                    </div>
+
+                    {/* Total Cost Display */}
+                    <div className="bg-red-50/50 border border-red-100 p-5 rounded-2xl">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xl font-bold text-gray-800">{t.bookingModal.totalCost}:</span>
+                        <span className="text-2xl font-black text-red-600">
+                          {experience.price} × {bookingData.participants}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-4 px-8 rounded-xl text-lg font-bold shadow-lg transition-all transform hover:scale-[1.02] active:scale-95"
+                    >
+                      {t.bookingModal.bookNow}
+                    </button>
+                  </form>
+                </>
+              );
+            })()}
           </div>
         </div>
+      )}
+      {isAdminOpen && (
+        <AdminPanel onClose={() => setIsAdminOpen(false)} />
       )}
     </div>
   );
