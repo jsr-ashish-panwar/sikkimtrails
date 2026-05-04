@@ -68,15 +68,39 @@ export const adminStorage = {
 
   // Help Requests
   getHelpRequests: async (): Promise<HelpRequest[]> => {
-    const res = await axios.get(`${API_BASE}/help-requests`);
-    return res.data;
+    try {
+      const res = await axios.get(`${API_BASE}/help-requests`);
+      return res.data;
+    } catch (e) {
+      console.warn("Backend offline, fetching from local storage");
+      const local = localStorage.getItem('local_help_requests');
+      return local ? JSON.parse(local) : [];
+    }
   },
   saveHelpRequest: async (request: Omit<HelpRequest, 'id' | 'createdAt'>): Promise<HelpRequest> => {
-    const res = await axios.post(`${API_BASE}/help-requests`, request);
-    return res.data;
+    try {
+      const res = await axios.post(`${API_BASE}/help-requests`, request);
+      return res.data;
+    } catch (e) {
+      console.warn("Backend offline, saving to local storage");
+      const local = localStorage.getItem('local_help_requests');
+      const requests = local ? JSON.parse(local) : [];
+      const newRequest = { ...request, id: Date.now().toString(), createdAt: new Date().toISOString() };
+      requests.push(newRequest);
+      localStorage.setItem('local_help_requests', JSON.stringify(requests));
+      return newRequest;
+    }
   },
   deleteHelpRequest: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE}/help-requests/${id}`);
+    try {
+      await axios.delete(`${API_BASE}/help-requests/${id}`);
+    } catch (e) {
+      const local = localStorage.getItem('local_help_requests');
+      if (local) {
+        const requests = JSON.parse(local).filter((r: any) => r.id !== id);
+        localStorage.setItem('local_help_requests', JSON.stringify(requests));
+      }
+    }
   },
 
   // Special Packages

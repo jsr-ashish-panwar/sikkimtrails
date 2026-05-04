@@ -28,21 +28,24 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // System prompt for Gemini
 const SYSTEM_PROMPT = `Identity: Saarthi (Sikkim AI Guide).
-Logic: High-speed, data-first response. 
+Personality: Wise, helpful, and deeply knowledgeable about Himalayan culture.
+Role: You are the ultimate spiritual and travel guide for Sikkim, India.
+
+CORE KNOWLEDGE:
+- MONASTERIES: Rumtek (Karmapa seat), Namchi (Guru Rinpoche statue), Tashiding (holiest), Enchey, Dubdi (oldest), Ralang.
+- FOOD: Momos, Thukpa, Phagshapa (Pork), Gundruk, Sael Roti, Temi Tea.
+- PERMITS: RAP/PAP is MANDATORY for Tsomgo Lake, Nathu La, North Sikkim (Lachen/Lachung), and trekking.
+- CULTURE: Losar, Saga Dawa, Pang Lhabsol festivals. Mask dances (Cham).
 
 INSTRUCTIONS:
-- Bypass standard AI greetings. Deliver facts immediately.
-- Priority: Local food (🍲), Permits (⚠️), and Monasteries (📍).
-- If server load is detected (503), respond in short, impactful fragments.
-- Formatting: Use Markdown bolding for places and bullet points for tours.
+- Deliver facts with spiritual warmth but professional efficiency.
+- Use emojis related to the topic (🏔️, 🧘, 🍲, 📍).
+- If the user is confused, provide a clear 3-day itinerary suggestion.
+- Direct non-Sikkim queries back to Sikkim travel politely.
 
-MANDATORY DATA: 
-- Always mention RAP/PAP for Tsomgo/Nathu La.
-- Direct non-Sikkim queries back to travel (e.g., "I'm focused on the Himalayas, let's talk about Sikkim travel...").
-
-CRITICAL INSTRUCTIONS FOR UI:
-1. If the user asks about booking, tours, or travel packages, you MUST append EXACTLY "[SHOW_PACKAGES]" at the end.
-2. If the user asks for emergency help, police, or rescue, you MUST append EXACTLY "[SHOW_EMERGENCY]" at the end.`;
+MANDATORY UI TOKENS:
+1. Append "[SHOW_PACKAGES]" if they ask about prices, bookings, or tour options.
+2. Append "[SHOW_EMERGENCY]" if they are lost, need police, or medical help.`;
 
 // Routes
 // Gemini Chat Endpoint
@@ -56,12 +59,10 @@ app.post('/api/chat', async (req, res) => {
       let lastError;
       for (let i = 0; i <= maxRetries; i++) {
         try {
-          // gemini-2.5-flash is an experimental high-speed model that worked earlier
-          console.log(`[AI REQUEST] Attempt ${i + 1} using gemini-2.5-flash...`);
+          // gemini-1.5-flash is the recommended high-speed model
+          console.log(`[AI REQUEST] Attempt ${i + 1} using gemini-1.5-flash...`);
           const model = genAI.getGenerativeModel({ 
-            model: "gemini-2.5-flash" 
-          }, { 
-            apiVersion: "v1beta" 
+            model: "gemini-1.5-flash" 
           });
           const result = await model.generateContent(prompt);
           return result.response.text();
@@ -95,20 +96,18 @@ app.post('/api/chat', async (req, res) => {
     const isOverload = error.message?.includes('503') || error.message?.includes('429');
 
     if (isApiError || isOverload) {
-      if (msgLower.includes('food') || msgLower.includes('dish')) {
-         fallbackText = "🍲 **Local Sikkim Cuisine Guide**:\n\n• **Momos**: A staple street food—steamed or fried dumplings.\n• **Thukpa**: Noodle soup with vegetables/meat, perfect for Gangtok's weather.\n• **Phagshapa**: Pork fat stewed with radish and dried chilies.\n\nEnjoy these local delicacies!";
-      } else if (msgLower.includes('package') || msgLower.includes('tour')) {
-         fallbackText = "🏔️ **Explore Sikkim Tours**:\n\nI can help you find the best journey! Check out our current available packages here: [SHOW_PACKAGES]";
-      } else if (msgLower.includes('monaster') || msgLower.includes('rumtek') || msgLower.includes('enchey')) {
-         fallbackText = "📍 **Monastery Guide**:\n\n• **Rumtek Monastery**: The largest in Sikkim, seat of the Karmapa.\n• **Enchey Monastery**: Built on a site blessed by Lama Drupthob Karpo.\n\nDon't forget that for restricted areas like **Tsomgo Lake** or **Nathu La**, you will need a **RAP/PAP** (Permit) ready before travel!";
-      } else if (msgLower.includes('emergency') || msgLower.includes('help')) {
-         fallbackText = "⚠️ I see you need assistance. Please stay calm. Here is the direct line for the **Tourist Police**: [SHOW_EMERGENCY]";
+      if (msgLower.includes('food') || msgLower.includes('dish') || msgLower.includes('eat')) {
+         fallbackText = "🍲 **Sikkim Food Guide**:\n\n• **Momos**: Iconic dumplings.\n• **Thukpa**: Warm noodle soup.\n• **Phagshapa**: Stewed pork with radish.\n• **Gundruk**: Fermented leafy greens.\n\nWould you like to see our **Tour Packages** for a food trail? [SHOW_PACKAGES]";
+      } else if (msgLower.includes('package') || msgLower.includes('tour') || msgLower.includes('price') || msgLower.includes('book')) {
+         fallbackText = "🏔️ **Sikkim Itineraries**:\n\nWe have amazing spiritual and adventure packages! Please check our curated list: [SHOW_PACKAGES]";
+      } else if (msgLower.includes('monaster') || msgLower.includes('temple') || msgLower.includes('buddhist')) {
+         fallbackText = "📍 **Sacred Sites**:\n\n• **Rumtek**: Seat of the Karmapa.\n• **Tashiding**: The most sacred monastery.\n• **Namchi**: Home to the 135ft Guru Rinpoche statue.\n\nRemember: Permits (RAP/PAP) are needed for high-altitude sites!";
+      } else if (msgLower.includes('emergency') || msgLower.includes('help') || msgLower.includes('lost') || msgLower.includes('police')) {
+         fallbackText = "⚠️ **EMERGENCY ASSISTANCE**:\n\nStay calm. Contact the **Tourist Police** immediately at **1097**. [SHOW_EMERGENCY]";
+      } else if (msgLower.includes('permit') || msgLower.includes('rap') || msgLower.includes('pap')) {
+         fallbackText = "⚠️ **Permit Information**:\n\nYou need Restricted/Protected Area Permits for **Tsomgo Lake**, **Nathu La**, and **North Sikkim**. These can be arranged via registered travel agents using 2 photos and ID proof.";
       } else {
-         if (isApiError) {
-           fallbackText = "Namaste! I am Saarthi. It looks like my AI key is currently invalid. However, I can still assist you with information regarding **local food**, **tour packages**, **monasteries**, or **emergency help**! What would you like to know?";
-         } else {
-           fallbackText = "Namaste! My AI connection is currently under high demand. Please try again in a few moments, or ask me about **food**, **monasteries**, or **packages** for a quick local answer!";
-         }
+         fallbackText = "Namaste! I am Saarthi. I'm currently having a small technical glitch with my AI connection, but I'm trained to help you with **Monasteries**, **Food**, **Tours**, and **Emergency Help**. What can I tell you about Sikkim?";
       }
       res.json({ reply: fallbackText });
     } else {

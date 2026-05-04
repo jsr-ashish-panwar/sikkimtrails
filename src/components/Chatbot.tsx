@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Navigation, Wallet, ExternalLink, ShieldAlert, PhoneCall } from 'lucide-react';
+import { Bot, X, Send, Navigation, Wallet, ExternalLink, ShieldAlert, PhoneCall, Sparkles } from 'lucide-react';
 import { adminStorage } from '../utils/adminStorage';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 interface Message {
   type: 'user' | 'bot';
@@ -117,15 +118,83 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
         )
       };
     } catch (error: any) {
-      console.error("Saarthi Chat Error:", {
-        message: error.message,
-        stack: error.stack,
-        url: "/api/chat"
-      });
+      console.error("Saarthi Backend Error, attempting Frontend AI fallback...");
+      
+      const frontendApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (frontendApiKey) {
+        try {
+          const genAI = new GoogleGenerativeAI(frontendApiKey);
+          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+          const prompt = `Identity: Saarthi (Sikkim AI Guide). You are running in FRONTEND FALLBACK mode.
+          Knowledge: Sikkim travel, monasteries, food, permits.
+          User: ${userMessage}
+          Saarthi:`;
+          
+          const result = await model.generateContent(prompt);
+          const text = result.response.text();
+          
+          return {
+            type: 'bot',
+            timestamp: new Date(),
+            content: (
+              <div className="space-y-2">
+                <div className="flex items-center text-[10px] text-orange-500 font-bold mb-1">
+                   <Sparkles className="h-3 w-3 mr-1" />
+                   SATELLITE LINK ACTIVE
+                </div>
+                <p>{text}</p>
+              </div>
+            )
+          };
+        } catch (fe) {
+          console.error("Frontend AI also failed:", fe);
+        }
+      }
+
+      // Final local fallback if all AI fails
+      const msgLower = userMessage.toLowerCase();
+      let localReply = "Namaste! I'm currently operating in a low-connectivity zone of the Himalayas. ";
+
+      if (msgLower.includes('food') || msgLower.includes('eat')) {
+        localReply += "I can tell you that Sikkim is famous for Momos, Thukpa, and Phagshapa. You should also try the local tea!";
+      } else if (msgLower.includes('monaster') || msgLower.includes('place') || msgLower.includes('visit')) {
+        localReply += "I highly recommend Rumtek Monastery and the giant Guru Rinpoche statue in Namchi.";
+      } else if (msgLower.includes('package') || msgLower.includes('tour') || msgLower.includes('price')) {
+        localReply += "We have several spiritual packages available. [SHOW_PACKAGES]";
+      } else if (msgLower.includes('emergency') || msgLower.includes('help') || msgLower.includes('police')) {
+        localReply += "For any emergency, please call the Tourist Police at 1097. [SHOW_EMERGENCY]";
+      } else {
+        localReply += "I can still help you with information about food, monasteries, or tours! What would you like to know?";
+      }
+
       return {
         type: 'bot',
         timestamp: new Date(),
-        content: "Sorry, I am having trouble connecting to the network right now."
+        content: (
+          <div className="space-y-2">
+            <p>{localReply}</p>
+            <div className="mt-2 p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg text-[10px] text-orange-800 dark:text-orange-300">
+              Note: AI brain offline. Using local knowledge.
+            </div>
+            <button 
+              onClick={async () => {
+                try {
+                  await adminStorage.saveHelpRequest({ 
+                    name: 'Chatbot User', 
+                    subject: 'Offline Query', 
+                    message: userMessage 
+                  });
+                  alert('Your question has been saved locally! We will get back to you.');
+                } catch (e) {
+                  alert('Could not save at this time.');
+                }
+              }}
+              className="mt-2 text-[10px] bg-red-600 text-white px-3 py-1 rounded-full hover:bg-red-700 transition-colors"
+            >
+              Save question for later
+            </button>
+          </div>
+        )
       };
     }
   };
