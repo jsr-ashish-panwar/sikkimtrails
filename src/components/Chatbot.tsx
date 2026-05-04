@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Navigation, Wallet, ExternalLink, ShieldAlert, PhoneCall, Sparkles } from 'lucide-react';
 import { adminStorage } from '../utils/adminStorage';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { offlineBrain } from '../utils/offlineBrain';
 
 interface Message {
   type: 'user' | 'bot';
@@ -24,9 +25,18 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
       timestamp: new Date()
     }
   ]);
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [chatCache, setChatCache] = useState<Record<string, Message>>(() => {
+    const saved = localStorage.getItem('saarthi_cache');
+    return saved ? JSON.parse(saved) : {};
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('saarthi_cache', JSON.stringify(chatCache));
+  }, [chatCache]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,11 +50,20 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
   }, [currentLanguage]);
 
   const getBotResponse = async (userMessage: string): Promise<Message> => {
+    const normalizedMsg = userMessage.trim().toLowerCase();
+    if (chatCache[normalizedMsg]) {
+      return { ...chatCache[normalizedMsg], timestamp: new Date() };
+    }
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, language: currentLanguage })
+        body: JSON.stringify({ 
+          message: userMessage, 
+          language: currentLanguage,
+          history: chatHistory 
+        })
       });
       const data = await response.json();
       
@@ -62,7 +81,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
          reply = reply.replace('[SHOW_EMERGENCY]', '').trim();
       }
 
-      return {
+      const botMsg: Message = {
         type: 'bot',
         timestamp: new Date(),
         content: (
@@ -117,6 +136,13 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
           </div>
         )
       };
+
+      setChatCache(prev => ({ ...prev, [normalizedMsg]: botMsg }));
+      setChatHistory(prev => [...prev, 
+        { role: 'user', content: userMessage },
+        { role: 'model', content: reply }
+      ]);
+      return botMsg;
     } catch (error: any) {
       console.error("Saarthi Backend Error, attempting Frontend AI fallback...");
       
@@ -125,13 +151,28 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
         try {
           const genAI = new GoogleGenerativeAI(frontendApiKey);
           const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          const prompt = `Identity: Saarthi (Sikkim AI Guide). You are running in FRONTEND FALLBACK mode.
-          Knowledge: Sikkim travel, monasteries, food, permits.
-          User: ${userMessage}
-          Saarthi:`;
           
-          const result = await model.generateContent(prompt);
+          const chat = model.startChat({
+            history: chatHistory.map(h => ({
+              role: h.role === 'user' ? 'user' : 'model',
+              parts: [{ text: h.content }]
+            })),
+            generationConfig: {
+              maxOutputTokens: 500,
+            },
+          });
+
+          const systemPrompt = `Identity: Saarthi (Sikkim AI Guide). You are running in FRONTEND FALLBACK mode.
+          Knowledge: Sikkim travel, monasteries, food, permits.
+          Instructions: Use history to provide contextual answers. Keep it helpful and spiritual.`;
+          
+          const result = await chat.sendMessage(`${systemPrompt}\n\nUser: ${userMessage}`);
           const text = result.response.text();
+          
+          setChatHistory(prev => [...prev, 
+            { role: 'user', content: userMessage },
+            { role: 'model', content: text }
+          ]);
           
           return {
             type: 'bot',
@@ -152,29 +193,20 @@ const Chatbot: React.FC<ChatbotProps> = ({ currentLanguage, isOpen, onClose, the
       }
 
       // Final local fallback if all AI fails
-      const msgLower = userMessage.toLowerCase();
-      let localReply = "Namaste! I'm currently operating in a low-connectivity zone of the Himalayas. ";
-
-      if (msgLower.includes('food') || msgLower.includes('eat')) {
-        localReply += "I can tell you that Sikkim is famous for Momos, Thukpa, and Phagshapa. You should also try the local tea!";
-      } else if (msgLower.includes('monaster') || msgLower.includes('place') || msgLower.includes('visit')) {
-        localReply += "I highly recommend Rumtek Monastery and the giant Guru Rinpoche statue in Namchi.";
-      } else if (msgLower.includes('package') || msgLower.includes('tour') || msgLower.includes('price')) {
-        localReply += "We have several spiritual packages available. [SHOW_PACKAGES]";
-      } else if (msgLower.includes('emergency') || msgLower.includes('help') || msgLower.includes('police')) {
-        localReply += "For any emergency, please call the Tourist Police at 1097. [SHOW_EMERGENCY]";
-      } else {
-        localReply += "I can still help you with information about food, monasteries, or tours! What would you like to know?";
-      }
+      const localReply = offlineBrain.getFallback(userMessage);
 
       return {
         type: 'bot',
         timestamp: new Date(),
         content: (
           <div className="space-y-2">
-            <p>{localReply}</p>
+            <div className="flex items-center text-[10px] text-orange-500 font-bold mb-1">
+               <Bot className="h-3 w-3 mr-1" />
+               OFFLINE MODE
+            </div>
+            <p className="whitespace-pre-wrap">{localReply}</p>
             <div className="mt-2 p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg text-[10px] text-orange-800 dark:text-orange-300">
-              Note: AI brain offline. Using local knowledge.
+              Note: AI connection unstable. Using pre-trained Himalayan knowledge.
             </div>
             <button 
               onClick={async () => {

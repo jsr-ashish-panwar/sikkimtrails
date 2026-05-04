@@ -24,7 +24,7 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY);
 
 // System prompt for Gemini
 const SYSTEM_PROMPT = `Identity: Saarthi (Sikkim AI Guide).
@@ -52,10 +52,10 @@ MANDATORY UI TOKENS:
 app.post('/api/chat', async (req, res) => {
   console.log(`[CHAT REQUEST] ${new Date().toISOString()} - Message: ${req.body.message?.substring(0, 50)}...`);
   try {
-    const { message, language } = req.body;
+    const { message, language, history } = req.body;
     
     // Function to call Gemini with a simple retry for 503/429
-    const callGeminiWithRetry = async (prompt, maxRetries = 3) => {
+    const callGeminiWithRetry = async (prompt, historyData = [], maxRetries = 3) => {
       let lastError;
       for (let i = 0; i <= maxRetries; i++) {
         try {
@@ -64,7 +64,21 @@ app.post('/api/chat', async (req, res) => {
           const model = genAI.getGenerativeModel({ 
             model: "gemini-1.5-flash" 
           });
-          const result = await model.generateContent(prompt);
+
+          // Convert history to Gemini format
+          const formattedHistory = (historyData || []).map(h => ({
+            role: h.role === 'user' ? 'user' : 'model',
+            parts: [{ text: h.content }]
+          }));
+
+          const chat = model.startChat({
+            history: formattedHistory,
+            generationConfig: {
+              maxOutputTokens: 1000,
+            },
+          });
+
+          const result = await chat.sendMessage(prompt);
           return result.response.text();
         } catch (error) {
           lastError = error;
@@ -80,8 +94,8 @@ app.post('/api/chat', async (req, res) => {
       }
     };
 
-    const combinedPrompt = `${SYSTEM_PROMPT}\n\nUser Language: ${language || 'English'}\nUser: ${message}\nSaarthi:`;
-    const responseText = await callGeminiWithRetry(combinedPrompt);
+    const combinedPrompt = `${SYSTEM_PROMPT}\n\nUser Language: ${language || 'English'}\nUser Query: ${message}`;
+    const responseText = await callGeminiWithRetry(combinedPrompt, history);
     
     res.json({ reply: responseText });
   } catch (error) {
