@@ -75,7 +75,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onClose }) => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'vidya@123') {
+    if (password === import.meta.env.VITE_ADMIN_PASSWORD || password === 'vidya@123') { // Fallback for local dev if env not set
       setIsAuthenticated(true);
     } else {
       alert('Access Denied: Incorrect Security Key');

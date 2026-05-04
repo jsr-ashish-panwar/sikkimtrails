@@ -1159,8 +1159,8 @@ const App: React.FC = () => {
             <div className="grid md:grid-cols-3 gap-12">
               {[
                 { name: 'Ashish Panwar', role: 'Founder & CEO', img: 'ashish.jpg', bio: 'Leading the team with innovation and vision.' },
-                { name: 'Niharika Pal', role: 'Creative Director', img: 'nikki.jpeg', bio: 'Bringing creative ideas and smart strategies.' },
-                { name: 'Puru Sharma', role: 'Technical Lead', img: 'puru.jpeg', bio: 'Building reliable and scalable solutions.' }
+                { name: 'Puru Sharma', role: 'Creative Director', img: 'puru.jpeg', bio: 'Bringing creative ideas and smart strategies.' },
+                { name: 'Manish Chauhan', role: 'Technical Lead', img: 'manish.jpeg', bio: 'Building reliable and scalable solutions.' }
               ].map(person => (
                 <div key={person.name} className="text-center group">
                   <div className="relative inline-block mb-4">
